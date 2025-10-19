@@ -1,42 +1,31 @@
 version: 1
-backend:
-  phases:
-    build:
-      commands:
-        - '# Execute Amplify CLI with the helper script'
-        - amplifyPush --simple
 
+# Frontend Build Configuration for React/Vite App
 frontend:
   phases:
     preBuild:
       commands:
-        - cd backend
+        - cd frontend
         - npm ci
     build:
       commands:
         - npm run build
   artifacts:
-    baseDirectory: backend/dist
+    baseDirectory: frontend/dist
     files:
       - '**/*'
   cache:
     paths:
-      - backend/node_modules/**/*
+      - frontend/node_modules/**/*
 
 # Environment variables needed (set in Amplify Console):
-# NODE_ENV=production
-# DB_HOST=<RDS-ENDPOINT>
-# DB_PORT=5432
-# DB_NAME=hackathon_platform
-# DB_USER=postgres
-# DB_PASSWORD=<SECURE-PASSWORD>
-# JWT_SECRET=<YOUR-JWT-SECRET>
-# AWS_REGION=us-east-1
-# AWS_S3_BUCKET=<YOUR-S3-BUCKET>
-# USE_AWS_S3=true
-# USE_MINIO=false
-# OPENAI_API_KEY=<YOUR-OPENAI-KEY>
-# OPENAI_MODEL=gpt-4-turbo-preview
-# OPENAI_MAX_TOKENS=2000
-# AI_GRADING_ENABLED=true
-# AI_GRADING_AUTO=false
+# VITE_API_URL=<Your Backend API URL>
+# VITE_WS_URL=<Your Backend WebSocket URL>
+#
+# Examples:
+# VITE_API_URL=https://api.yourdomain.com
+# VITE_WS_URL=wss://api.yourdomain.com
+#
+# Or with API Gateway:
+# VITE_API_URL=https://abc123.execute-api.us-east-1.amazonaws.com/prod
+# VITE_WS_URL=wss://abc123.execute-api.us-east-1.amazonaws.com/prod
