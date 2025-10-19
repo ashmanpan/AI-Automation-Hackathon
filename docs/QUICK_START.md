@@ -77,7 +77,7 @@ Before you start coding:
 - [ ] Read the [README](../README.md)
 - [ ] Review [CONTRIBUTING.md](../CONTRIBUTING.md)
 - [ ] Check [CODE_OF_CONDUCT.md](../CODE_OF_CONDUCT.md)
-- [ ] Browse [RESOURCES.md](RESOURCES.md) for tools and APIs
+- [ ] Browse [Resources](RESOURCES.md) for tools and APIs
 
 While coding:
 - [ ] Set up `.env` file for API keys (don't commit it!)
@@ -187,7 +187,7 @@ If you're new to AI automation:
 ## 🔧 Troubleshooting
 
 ### "I can't decide what to build"
-- Browse [RESOURCES.md](RESOURCES.md) for inspiration
+- Browse [Resources](RESOURCES.md) for inspiration
 - Check example projects from other hackathons
 - Start with a problem you personally face
 
@@ -208,14 +208,14 @@ If you're new to AI automation:
 |------|-------|
 | Main README | [README.md](../README.md) |
 | Contribution Guide | [CONTRIBUTING.md](../CONTRIBUTING.md) |
-| Resources & APIs | [docs/RESOURCES.md](RESOURCES.md) |
-| FAQ | [docs/FAQ.md](FAQ.md) |
+| Resources & APIs | [RESOURCES.md](RESOURCES.md) |
+| FAQ | [FAQ.md](FAQ.md) |
 | Example Project | [projects/example-project/](../projects/example-project/) |
 
 ## 🎬 Next Steps
 
 1. ✅ **Read this guide** - You're almost done!
-2. 📖 **Browse resources** - Check [RESOURCES.md](RESOURCES.md)
+2. 📖 **Browse resources** - Check [Resources](RESOURCES.md)
 3. 💻 **Set up project** - Follow the 5-minute quick start above
 4. 🚀 **Start building** - Make something awesome!
 5. 📝 **Submit** - Follow [CONTRIBUTING.md](../CONTRIBUTING.md)
