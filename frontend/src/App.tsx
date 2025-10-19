@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
+import { ErrorBoundary } from './components/common'
 import Login from './pages/Login'
 import { AdminRoute, JudgeRoute, ParticipantRoute } from './components/auth/ProtectedRoute'
 import AdminLayout from './components/layouts/AdminLayout'
@@ -30,20 +31,21 @@ import Leaderboard from './pages/public/Leaderboard'
 
 function App() {
   return (
-    <BrowserRouter>
-      <Toaster
-        position="top-right"
-        toastOptions={{
-          duration: 4000,
-          style: {
-            background: '#1a1a1a',
-            color: '#fff',
-            border: '1px solid #333',
-          },
-        }}
-      />
+    <ErrorBoundary>
+      <BrowserRouter>
+        <Toaster
+          position="top-right"
+          toastOptions={{
+            duration: 4000,
+            style: {
+              background: '#1a1a1a',
+              color: '#fff',
+              border: '1px solid #333',
+            },
+          }}
+        />
 
-      <Routes>
+        <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/" element={<Navigate to="/login" replace />} />
 
@@ -188,8 +190,9 @@ function App() {
 
         {/* 404 */}
         <Route path="*" element={<Navigate to="/login" replace />} />
-      </Routes>
-    </BrowserRouter>
+        </Routes>
+      </BrowserRouter>
+    </ErrorBoundary>
   )
 }
 

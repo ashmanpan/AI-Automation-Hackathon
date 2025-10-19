@@ -2,28 +2,33 @@ import { useState, useEffect } from 'react'
 import { Card, Button, LoadingSpinner, Badge } from '@/components/common'
 import leaderboardService from '@/services/leaderboard.service'
 import { Leaderboard as LeaderboardType } from '@/types/leaderboard.types'
+import { useWebSocketEvent } from '@/hooks/useWebSocket'
+import websocketService from '@/services/websocket.service'
 import toast from 'react-hot-toast'
 
 const Leaderboard = () => {
   const [leaderboard, setLeaderboard] = useState<LeaderboardType | null>(null)
   const [loading, setLoading] = useState(true)
-  const [autoRefresh, setAutoRefresh] = useState(true)
+  const [liveUpdates, setLiveUpdates] = useState(true)
+  const [isConnected, setIsConnected] = useState(false)
+
+  // Connect to WebSocket for real-time updates
+  useEffect(() => {
+    if (liveUpdates) {
+      websocketService.connect()
+      setIsConnected(websocketService.isConnected())
+    }
+  }, [liveUpdates])
+
+  // Listen for real-time leaderboard updates
+  useWebSocketEvent<LeaderboardType>('leaderboard:update', (data) => {
+    console.log('Received real-time leaderboard update')
+    setLeaderboard(data)
+  })
 
   useEffect(() => {
     loadLeaderboard()
-
-    // Auto-refresh every 30 seconds
-    let interval: number | undefined
-    if (autoRefresh) {
-      interval = window.setInterval(() => {
-        loadLeaderboard(true)
-      }, 30000)
-    }
-
-    return () => {
-      if (interval) clearInterval(interval)
-    }
-  }, [autoRefresh])
+  }, [])
 
   const loadLeaderboard = async (silent = false) => {
     try {
@@ -96,10 +101,17 @@ const Leaderboard = () => {
               🔄 Refresh Now
             </Button>
             <Button
-              variant={autoRefresh ? 'success' : 'outline'}
-              onClick={() => setAutoRefresh(!autoRefresh)}
+              variant={liveUpdates ? 'success' : 'outline'}
+              onClick={() => setLiveUpdates(!liveUpdates)}
             >
-              {autoRefresh ? '✓ Auto-refresh ON' : 'Auto-refresh OFF'}
+              {liveUpdates ? (
+                <>
+                  <span style={{ display: 'inline-block', width: '8px', height: '8px', borderRadius: '50%', backgroundColor: isConnected ? '#00ff88' : '#ff6b6b', marginRight: '8px', animation: isConnected ? 'pulse 2s infinite' : 'none' }}></span>
+                  Live Updates {isConnected ? 'ON' : 'Connecting...'}
+                </>
+              ) : (
+                'Live Updates OFF'
+              )}
             </Button>
           </div>
         </div>

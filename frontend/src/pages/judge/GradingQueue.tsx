@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { Card, Button, Select, LoadingSpinner, Badge } from '@/components/common'
 import submissionService from '@/services/submission.service'
 import { GradingQueue as GradingQueueType } from '@/types/submission.types'
+import { useWebSocketEvent, useWebSocketConnection } from '@/hooks/useWebSocket'
 import toast from 'react-hot-toast'
 
 const GradingQueue = () => {
@@ -10,6 +11,24 @@ const GradingQueue = () => {
   const [queue, setQueue] = useState<GradingQueueType[]>([])
   const [loading, setLoading] = useState(true)
   const [priorityFilter, setPriorityFilter] = useState<string>('')
+
+  // Connect to WebSocket for live updates
+  useWebSocketConnection()
+
+  // Listen for new submissions
+  useWebSocketEvent<any>('submission:new', (data) => {
+    toast.success(`🔔 New submission received: ${data.exercise_title}`, {
+      duration: 5000,
+      icon: '🎯',
+    })
+    loadQueue() // Reload queue to show new submission
+  })
+
+  // Listen for graded submissions (might be graded by another judge)
+  useWebSocketEvent<any>('submission:graded', (data) => {
+    // Remove graded submission from queue
+    setQueue(prev => prev.filter(item => item.submission_id !== data.submission_id))
+  })
 
   useEffect(() => {
     loadQueue()
