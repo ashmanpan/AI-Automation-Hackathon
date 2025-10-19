@@ -1,0 +1,32 @@
+# Python dependencies for the example project
+# Participants should customize this based on their needs
+
+# Core dependencies
+pytest>=7.0.0
+pytest-cov>=4.0.0
+
+# AI/ML libraries (uncomment as needed)
+# openai>=1.0.0
+# langchain>=0.1.0
+# transformers>=4.30.0
+# tensorflow>=2.13.0
+# torch>=2.0.0
+
+# Automation tools (uncomment as needed)
+# selenium>=4.0.0
+# beautifulsoup4>=4.12.0
+# requests>=2.31.0
+# schedule>=1.2.0
+
+# Data processing
+# pandas>=2.0.0
+# numpy>=1.24.0
+
+# Utilities
+python-dotenv>=1.0.0
+pyyaml>=6.0
+
+# Web frameworks (if building an API)
+# flask>=2.3.0
+# fastapi>=0.100.0
+# uvicorn>=0.23.0
