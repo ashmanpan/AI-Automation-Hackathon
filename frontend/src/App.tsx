@@ -25,8 +25,8 @@ import ExerciseList from './pages/participant/ExerciseList'
 import ExerciseDetail from './pages/participant/ExerciseDetail'
 import MySubmissions from './pages/participant/MySubmissions'
 
-// Public pages (will be created in Phase 7)
-// import PublicLeaderboard from './pages/public/PublicLeaderboard'
+// Public pages
+import Leaderboard from './pages/public/Leaderboard'
 
 function App() {
   return (
@@ -183,8 +183,8 @@ function App() {
           }
         />
 
-        {/* Public Routes (Phase 7) */}
-        {/* <Route path="/leaderboard" element={<PublicLeaderboard />} /> */}
+        {/* Public Routes - No authentication required */}
+        <Route path="/leaderboard" element={<Leaderboard />} />
 
         {/* 404 */}
         <Route path="*" element={<Navigate to="/login" replace />} />
