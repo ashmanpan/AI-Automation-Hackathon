@@ -1,0 +1,184 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Hackathon Platform - Simplified Stack (S3 and RDS only)'
+
+Parameters:
+  EnvironmentName:
+    Description: Environment name prefix
+    Type: String
+    Default: hackathon-platform
+
+  VpcId:
+    Description: VPC ID where RDS will be deployed
+    Type: AWS::EC2::VPC::Id
+
+  PrivateSubnet1:
+    Description: Private Subnet 1 for RDS
+    Type: AWS::EC2::Subnet::Id
+
+  PrivateSubnet2:
+    Description: Private Subnet 2 for RDS
+    Type: AWS::EC2::Subnet::Id
+
+  DBUsername:
+    Description: Database administrator username
+    Type: String
+    Default: postgres
+    NoEcho: false
+
+  DBPassword:
+    Description: Database administrator password
+    Type: String
+    NoEcho: true
+    MinLength: 8
+
+  AllowedSecurityGroup:
+    Description: Security Group ID that should have access to RDS
+    Type: AWS::EC2::SecurityGroup::Id
+
+Resources:
+  # ===================================================================
+  # S3 Bucket for File Storage
+  # ===================================================================
+
+  FileStorageBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub ${EnvironmentName}-files-${AWS::AccountId}
+      CorsConfiguration:
+        CorsRules:
+          - AllowedHeaders:
+              - '*'
+            AllowedMethods:
+              - GET
+              - PUT
+              - POST
+              - DELETE
+              - HEAD
+            AllowedOrigins:
+              - '*'
+            MaxAge: 3600
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      VersioningConfiguration:
+        Status: Enabled
+      LifecycleConfiguration:
+        Rules:
+          - Id: DeleteOldVersions
+            Status: Enabled
+            NoncurrentVersionExpirationInDays: 30
+      Tags:
+        - Key: Name
+          Value: !Sub ${EnvironmentName}-storage
+
+  # ===================================================================
+  # RDS Security Group
+  # ===================================================================
+
+  RDSSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Security group for RDS PostgreSQL
+      VpcId: !Ref VpcId
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 5432
+          ToPort: 5432
+          SourceSecurityGroupId: !Ref AllowedSecurityGroup
+      Tags:
+        - Key: Name
+          Value: !Sub ${EnvironmentName}-rds-sg
+
+  # ===================================================================
+  # RDS PostgreSQL Database
+  # ===================================================================
+
+  DBSubnetGroup:
+    Type: AWS::RDS::DBSubnetGroup
+    Properties:
+      DBSubnetGroupDescription: Subnet group for RDS
+      SubnetIds:
+        - !Ref PrivateSubnet1
+        - !Ref PrivateSubnet2
+      Tags:
+        - Key: Name
+          Value: !Sub ${EnvironmentName}-db-subnet-group
+
+  RDSInstance:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      DBInstanceIdentifier: !Sub ${EnvironmentName}-postgres
+      DBName: hackathon_platform
+      Engine: postgres
+      EngineVersion: '15.4'
+      DBInstanceClass: db.t3.micro
+      AllocatedStorage: 20
+      StorageType: gp2
+      MasterUsername: !Ref DBUsername
+      MasterUserPassword: !Ref DBPassword
+      DBSubnetGroupName: !Ref DBSubnetGroup
+      VPCSecurityGroups:
+        - !Ref RDSSecurityGroup
+      BackupRetentionPeriod: 7
+      PreferredBackupWindow: '03:00-04:00'
+      PreferredMaintenanceWindow: 'sun:04:00-sun:05:00'
+      PubliclyAccessible: false
+      Tags:
+        - Key: Name
+          Value: !Sub ${EnvironmentName}-database
+
+  # ===================================================================
+  # IAM Policy for S3 Access (attach to your existing role)
+  # ===================================================================
+
+  S3AccessPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      ManagedPolicyName: !Sub ${EnvironmentName}-s3-access
+      Description: Allows access to hackathon files S3 bucket
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Action:
+              - s3:PutObject
+              - s3:GetObject
+              - s3:DeleteObject
+              - s3:HeadObject
+              - s3:ListBucket
+            Resource:
+              - !GetAtt FileStorageBucket.Arn
+              - !Sub ${FileStorageBucket.Arn}/*
+
+Outputs:
+  S3BucketName:
+    Description: S3 Bucket for File Storage
+    Value: !Ref FileStorageBucket
+    Export:
+      Name: !Sub ${EnvironmentName}-s3-bucket
+
+  RDSEndpoint:
+    Description: RDS PostgreSQL Endpoint
+    Value: !GetAtt RDSInstance.Endpoint.Address
+    Export:
+      Name: !Sub ${EnvironmentName}-rds-endpoint
+
+  RDSPort:
+    Description: RDS PostgreSQL Port
+    Value: !GetAtt RDSInstance.Endpoint.Port
+
+  S3AccessPolicyArn:
+    Description: ARN of S3 Access Policy (attach this to your EC2/ECS IAM role)
+    Value: !Ref S3AccessPolicy
+
+  ConnectionString:
+    Description: Database connection details (use with .env file)
+    Value: !Sub |
+      DB_HOST=${RDSInstance.Endpoint.Address}
+      DB_PORT=${RDSInstance.Endpoint.Port}
+      DB_NAME=hackathon_platform
+      DB_USER=${DBUsername}
+      AWS_S3_BUCKET=${FileStorageBucket}
+      AWS_REGION=${AWS::Region}
