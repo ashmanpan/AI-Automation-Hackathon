@@ -72,13 +72,14 @@ export class StatsController {
       );
 
       res.json({
-        totalUsers,
-        totalTeams,
-        totalExercises,
-        totalSubmissions,
-        pendingGrading,
-        activeHackathonId: hackathonId,
-        recentActivity: recentActivity.rows
+        total_users: totalUsers,
+        total_teams: totalTeams,
+        total_exercises: totalExercises,
+        total_submissions: totalSubmissions,
+        active_users: totalUsers, // TODO: Calculate actual active users
+        pending_grading: pendingGrading,
+        avg_score: 0, // TODO: Calculate average score
+        recent_activity: recentActivity.rows
       });
     } catch (error: any) {
       console.error('Get admin stats error:', error);
