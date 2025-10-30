@@ -23,11 +23,11 @@ export class SubmissionsController {
         const submissions = hackathon_id
           ? await SubmissionModel.findUngraded(parseInt(hackathon_id as string))
           : await SubmissionModel.findUngraded();
-        return res.json(submissions);
+        return res.json({ submissions });
       }
 
       const submissions = await SubmissionModel.findByHackathon(parseInt(hackathon_id as string));
-      return res.json(submissions);
+      return res.json({ submissions });
     } catch (error: any) {
       console.error('Get submissions error:', error);
       res.status(500).json({ error: 'Internal server error' });
@@ -43,7 +43,7 @@ export class SubmissionsController {
         return res.status(404).json({ error: 'Submission not found' });
       }
 
-      res.json(submission);
+      res.json({ submission });
     } catch (error: any) {
       console.error('Get submission error:', error);
       res.status(500).json({ error: 'Internal server error' });
