@@ -7,6 +7,7 @@ import { HackathonsController } from '../controllers/hackathonsController';
 import { ExercisesController } from '../controllers/exercisesController';
 import { SubmissionsController, GradesController, LeaderboardController } from '../controllers/submissionsController';
 import { AIGradingController } from '../controllers/aiGradingController';
+import { StatsController } from '../controllers/statsController';
 import { authenticateToken, requireAdmin, requireAdminOrJudge } from '../middleware/auth';
 
 const router = Router();
@@ -95,6 +96,11 @@ router.post('/ai-grading/batch', authenticateToken, requireAdmin, AIGradingContr
 router.post('/ai-grading/analyze', authenticateToken, requireAdminOrJudge, AIGradingController.analyzeCode);
 router.post('/ai-grading/regrade', authenticateToken, requireAdminOrJudge, AIGradingController.regradeSubmission);
 router.get('/ai-grading/stats', authenticateToken, requireAdminOrJudge, AIGradingController.getGradingStats);
+
+// ==================== Stats Routes ====================
+router.get('/stats/admin', authenticateToken, requireAdmin, StatsController.getAdminStats);
+router.get('/stats/judge', authenticateToken, requireAdminOrJudge, StatsController.getJudgeStats);
+router.get('/stats/participant', authenticateToken, StatsController.getParticipantStats);
 
 // Health check
 router.get('/health', (req, res) => {

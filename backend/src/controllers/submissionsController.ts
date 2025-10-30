@@ -7,7 +7,17 @@ import { uploadFile } from '../services/fileStorageService';
 export class SubmissionsController {
   static async getAll(req: Request, res: Response) {
     try {
-      const { hackathon_id, ungraded } = req.query;
+      let { hackathon_id, ungraded } = req.query;
+
+      // If no hackathon_id provided, use the active hackathon
+      if (!hackathon_id) {
+        const { default: pool } = await import('../config/database');
+        const result = await pool.query(
+          'SELECT id FROM hackathons WHERE status = $1 ORDER BY created_at DESC LIMIT 1',
+          ['active']
+        );
+        hackathon_id = result.rows[0]?.id?.toString() || '1';
+      }
 
       if (ungraded === 'true') {
         const submissions = hackathon_id
@@ -16,12 +26,8 @@ export class SubmissionsController {
         return res.json(submissions);
       }
 
-      if (hackathon_id) {
-        const submissions = await SubmissionModel.findByHackathon(parseInt(hackathon_id as string));
-        return res.json(submissions);
-      }
-
-      res.status(400).json({ error: 'hackathon_id is required' });
+      const submissions = await SubmissionModel.findByHackathon(parseInt(hackathon_id as string));
+      return res.json(submissions);
     } catch (error: any) {
       console.error('Get submissions error:', error);
       res.status(500).json({ error: 'Internal server error' });
