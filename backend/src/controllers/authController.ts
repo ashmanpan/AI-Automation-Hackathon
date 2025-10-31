@@ -58,11 +58,13 @@ export class AuthController {
       }
 
       res.json({
-        id: user.id,
-        username: user.username,
-        full_name: user.full_name,
-        email: user.email,
-        role: user.role,
+        user: {
+          id: user.id,
+          username: user.username,
+          full_name: user.full_name,
+          email: user.email,
+          role: user.role,
+        }
       });
     } catch (error: any) {
       console.error('Get user error:', error);
