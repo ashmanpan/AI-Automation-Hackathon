@@ -6,6 +6,24 @@ import csvParser from 'csv-parser';
 
 export class UsersController {
   /**
+   * Get user count (admin only)
+   */
+  static async getCount(req: Request, res: Response) {
+    try {
+      const { query } = require('../config/database');
+      const result = await query('SELECT COUNT(*) as total FROM users');
+      const roleResult = await query('SELECT role, COUNT(*) as count FROM users GROUP BY role');
+      res.json({
+        total: parseInt(result.rows[0].total),
+        by_role: roleResult.rows
+      });
+    } catch (error: any) {
+      console.error('Get user count error:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  }
+
+  /**
    * Get all users
    */
   static async getAll(req: Request, res: Response) {

@@ -39,6 +39,7 @@ router.get('/auth/me', authenticateToken, AuthController.me);
 router.post('/auth/change-password', authenticateToken, AuthController.changePassword);
 
 // ==================== Users Routes ====================
+router.get('/users/count', authenticateToken, requireAdmin, UsersController.getCount);
 router.get('/users', authenticateToken, requireAdminOrJudge, UsersController.getAll);
 router.get('/users/:id', authenticateToken, UsersController.getById);
 router.post('/users', authenticateToken, requireAdmin, UsersController.create);
