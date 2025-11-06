@@ -7,6 +7,7 @@ Welcome to the Hackathon Platform! This guide will help you navigate the platfor
 The goal of the hackathon is to allow you to gain a better understanding of how AI can be integrated in order to quickly generate workflows for Cisco Crosswork Workflow Manager, improving development agility. The intention of the hackathon is not to provide you with a ready-made solution, but to give you ideas on how AI coding capabilities can be integrated with your development process.
 
 ## Getting Started
+We will carry out all these exercises and hackathon on Cisco's demo cloud environment, dCloud. This environment and laboratories are created for you- every team has a separate environment and will not interact with each other. In this exercise we have deployed Cisco Crosswork Network Controller (CNC), Crosswork Data Gateway (CDG), Crosswork Workflow Manager (CWM), Crosswork Network Service Orchestrator (CNSO) and certain cisco devices.
 
 ### Accessing your dCloud Session
 1. Navigate to the following page: https://expo.ciscodcloud.com/2uqjv4ftmdxsk2pd5rrqu1f6q (Chrome recommended)
