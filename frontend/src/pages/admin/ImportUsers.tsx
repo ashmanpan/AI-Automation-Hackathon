@@ -1,17 +1,30 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Card, Button, Alert, FileInput } from '@/components/common'
-import userService, { BulkImportUser } from '@/services/user.service'
+import { useHackathonStore } from '@/store/hackathonStore'
+import userService from '@/services/user.service'
+import teamService from '@/services/team.service'
 import toast from 'react-hot-toast'
 
+interface ImportResult {
+  message: string
+  credentials: Array<{
+    id: number
+    username: string
+    password: string
+    full_name: string
+    email: string | null
+    role: string
+  }>
+}
+
 const ImportUsers = () => {
+  const navigate = useNavigate()
+  const { selectedHackathon } = useHackathonStore()
   const [file, setFile] = useState<File | null>(null)
   const [importing, setImporting] = useState(false)
-  const [result, setResult] = useState<{
-    success: boolean
-    imported_count: number
-    failed_count: number
-    errors?: Array<{ row: number; username: string; error: string }>
-  } | null>(null)
+  const [creatingTeams, setCreatingTeams] = useState(false)
+  const [result, setResult] = useState<ImportResult | null>(null)
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0]
@@ -21,37 +34,14 @@ const ImportUsers = () => {
     }
   }
 
-  const parseCSV = (text: string): BulkImportUser[] => {
-    const lines = text.split('\n').filter((line) => line.trim())
-    const headers = lines[0].split(',').map((h) => h.trim().toLowerCase())
-
-    const users: BulkImportUser[] = []
-    for (let i = 1; i < lines.length; i++) {
-      const values = lines[i].split(',').map((v) => v.trim())
-      const user: any = {}
-
-      headers.forEach((header, index) => {
-        user[header] = values[index]
-      })
-
-      // Validate required fields
-      if (user.username && user.password && user.role) {
-        users.push({
-          username: user.username,
-          password: user.password,
-          full_name: user.full_name || user.fullname,
-          email: user.email,
-          role: user.role as 'admin' | 'judge' | 'participant',
-        })
-      }
-    }
-
-    return users
-  }
-
   const handleImport = async () => {
     if (!file) {
       toast.error('Please select a file first')
+      return
+    }
+
+    if (!file.name.endsWith('.csv')) {
+      toast.error('Only CSV files are supported')
       return
     }
 
@@ -59,36 +49,37 @@ const ImportUsers = () => {
     setResult(null)
 
     try {
-      const text = await file.text()
-      let users: BulkImportUser[] = []
-
-      if (file.name.endsWith('.json')) {
-        const parsed = JSON.parse(text)
-        users = Array.isArray(parsed) ? parsed : parsed.users || []
-      } else if (file.name.endsWith('.csv')) {
-        users = parseCSV(text)
-      } else {
-        throw new Error('Unsupported file format. Please use CSV or JSON.')
-      }
-
-      if (users.length === 0) {
-        throw new Error('No valid users found in the file')
-      }
-
-      const response = await userService.bulkImport(users)
+      const response = await userService.bulkImport(file)
       setResult(response)
-
-      if (response.success) {
-        toast.success(`Successfully imported ${response.imported_count} users!`)
-      } else {
-        toast.error(`Import completed with ${response.failed_count} errors`)
-      }
+      toast.success(response.message || `Successfully imported ${response.credentials.length} users!`)
     } catch (error: any) {
       console.error('Import error:', error)
-      toast.error(error.message || 'Failed to import users')
+      toast.error(error.response?.data?.error || 'Failed to import users')
     } finally {
       setImporting(false)
     }
+  }
+
+  const handleDownloadCredentials = () => {
+    if (!result) return
+
+    const csvContent = [
+      'ID,Username,Password,Full Name,Email,Role',
+      ...result.credentials.map((c) =>
+        `${c.id},${c.username},${c.password},"${c.full_name}",${c.email || ''},${c.role}`
+      ),
+    ].join('\n')
+
+    const blob = new Blob([csvContent], { type: 'text/csv' })
+    const url = window.URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `user-credentials-${new Date().toISOString().split('T')[0]}.csv`
+    document.body.appendChild(a)
+    a.click()
+    window.URL.revokeObjectURL(url)
+    document.body.removeChild(a)
+    toast.success('Credentials downloaded')
   }
 
   const handleDownloadTemplate = async () => {
@@ -108,6 +99,52 @@ const ImportUsers = () => {
     }
   }
 
+  const handleAutoCreateTeams = async () => {
+    if (!selectedHackathon) {
+      toast.error('Please select a hackathon first')
+      return
+    }
+
+    if (!result || result.credentials.length === 0) {
+      toast.error('No users to create teams for')
+      return
+    }
+
+    setCreatingTeams(true)
+    let successCount = 0
+    let errorCount = 0
+
+    try {
+      for (const user of result.credentials) {
+        try {
+          // Create team with user's name
+          const team = await teamService.create({
+            name: user.full_name,
+            hackathon_id: selectedHackathon.id,
+          })
+
+          // Add user to their team
+          await teamService.addMember(team.id, user.id)
+          successCount++
+        } catch (error: any) {
+          console.error(`Failed to create team for ${user.full_name}:`, error)
+          errorCount++
+        }
+      }
+
+      if (successCount > 0) {
+        toast.success(`Created ${successCount} individual teams successfully!`)
+      }
+      if (errorCount > 0) {
+        toast.error(`Failed to create ${errorCount} teams`)
+      }
+    } catch (error: any) {
+      toast.error('Failed to auto-create teams')
+    } finally {
+      setCreatingTeams(false)
+    }
+  }
+
   return (
     <div>
       <div style={{ marginBottom: 'var(--spacing-xl)' }}>
@@ -115,26 +152,51 @@ const ImportUsers = () => {
           Import Users
         </h1>
         <p style={{ color: 'var(--color-text-tertiary)' }}>
-          Bulk import users from CSV or JSON file
+          Bulk import users from CSV file
         </p>
+        {selectedHackathon && (
+          <div style={{ marginTop: 'var(--spacing-sm)', padding: 'var(--spacing-sm)', background: 'rgba(0, 255, 136, 0.1)', borderRadius: 'var(--radius-md)', display: 'inline-block' }}>
+            <span style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)' }}>
+              Importing for: <strong className="gradient-text">{selectedHackathon.name}</strong>
+            </span>
+          </div>
+        )}
       </div>
+
+      {!selectedHackathon && (
+        <Alert variant="warning" style={{ marginBottom: 'var(--spacing-lg)' }}>
+          <strong>⚠️ No hackathon selected</strong><br/>
+          Users can be imported without a hackathon, but you'll need to assign them to teams in a specific hackathon later.
+        </Alert>
+      )}
 
       {/* Instructions Card */}
       <Card style={{ marginBottom: 'var(--spacing-lg)' }}>
         <h2 style={{ marginBottom: 'var(--spacing-md)' }}>📋 Instructions</h2>
+        <Alert variant="info" style={{ marginBottom: 'var(--spacing-md)' }}>
+          <strong>Auto-Generated Credentials:</strong> The system will automatically generate secure usernames and passwords for each user!
+        </Alert>
+
         <ol style={{ paddingLeft: 'var(--spacing-lg)', color: 'var(--color-text-secondary)' }}>
           <li style={{ marginBottom: 'var(--spacing-sm)' }}>
-            Download the CSV template or prepare a JSON file
+            Download the CSV template
           </li>
           <li style={{ marginBottom: 'var(--spacing-sm)' }}>
-            Fill in user information: username, password, full_name (optional), email (optional), role
+            Fill in <strong>only</strong>: <code style={{ background: 'var(--color-bg-secondary)', padding: '2px 6px', borderRadius: 'var(--radius-sm)' }}>full_name</code>,{' '}
+            <code style={{ background: 'var(--color-bg-secondary)', padding: '2px 6px', borderRadius: 'var(--radius-sm)' }}>email</code> (optional),{' '}
+            <code style={{ background: 'var(--color-bg-secondary)', padding: '2px 6px', borderRadius: 'var(--radius-sm)' }}>role</code>
           </li>
           <li style={{ marginBottom: 'var(--spacing-sm)' }}>
             Valid roles: <code style={{ background: 'var(--color-bg-secondary)', padding: '2px 6px', borderRadius: 'var(--radius-sm)' }}>admin</code>,{' '}
             <code style={{ background: 'var(--color-bg-secondary)', padding: '2px 6px', borderRadius: 'var(--radius-sm)' }}>judge</code>,{' '}
             <code style={{ background: 'var(--color-bg-secondary)', padding: '2px 6px', borderRadius: 'var(--radius-sm)' }}>participant</code>
           </li>
-          <li>Upload the file and click Import</li>
+          <li style={{ marginBottom: 'var(--spacing-sm)' }}>
+            Upload the CSV file and click Import
+          </li>
+          <li>
+            <strong>Download the generated credentials</strong> to distribute to users
+          </li>
         </ol>
 
         <Button
@@ -151,9 +213,9 @@ const ImportUsers = () => {
         <h2 style={{ marginBottom: 'var(--spacing-md)' }}>Upload File</h2>
 
         <FileInput
-          accept=".csv,.json"
+          accept=".csv"
           onChange={handleFileChange}
-          help="Supported formats: CSV, JSON (max 5MB)"
+          help="CSV format only: full_name,email,role"
         />
 
         {file && (
@@ -179,44 +241,96 @@ const ImportUsers = () => {
       {/* Result Card */}
       {result && (
         <Card>
-          <h2 style={{ marginBottom: 'var(--spacing-md)' }}>Import Results</h2>
-
-          <Alert variant={result.success ? 'success' : 'warning'}>
-            <div>
-              ✓ Successfully imported: <strong>{result.imported_count}</strong> users
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--spacing-md)' }}>
+            <h2>Import Results</h2>
+            <div style={{ display: 'flex', gap: 'var(--spacing-sm)' }}>
+              {selectedHackathon && (
+                <Button
+                  variant="success"
+                  onClick={handleAutoCreateTeams}
+                  loading={creatingTeams}
+                  disabled={creatingTeams}
+                >
+                  🚀 Create Individual Teams
+                </Button>
+              )}
+              <Button variant="primary" onClick={handleDownloadCredentials}>
+                📥 Download Credentials
+              </Button>
             </div>
-            {result.failed_count > 0 && (
-              <div style={{ marginTop: 'var(--spacing-xs)' }}>
-                ✗ Failed: <strong>{result.failed_count}</strong> users
-              </div>
-            )}
+          </div>
+
+          <Alert variant="success">
+            ✓ Successfully imported <strong>{result.credentials.length}</strong> users with auto-generated credentials
           </Alert>
 
-          {result.errors && result.errors.length > 0 && (
-            <div style={{ marginTop: 'var(--spacing-md)' }}>
-              <h3 style={{ marginBottom: 'var(--spacing-sm)' }}>Errors:</h3>
-              <div className="table-container">
-                <table className="table">
-                  <thead>
-                    <tr>
-                      <th>Row</th>
-                      <th>Username</th>
-                      <th>Error</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {result.errors.map((err, idx) => (
-                      <tr key={idx}>
-                        <td>{err.row}</td>
-                        <td>{err.username}</td>
-                        <td style={{ color: 'var(--color-error)' }}>{err.error}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+          <Alert variant="warning" style={{ marginTop: 'var(--spacing-md)' }}>
+            <strong>⚠️ Important:</strong> Download the credentials CSV now! Passwords are only shown once and cannot be retrieved later.
+          </Alert>
+
+          <Alert variant="info" style={{ marginTop: 'var(--spacing-md)' }}>
+            <strong>📋 Next Step:</strong> Choose how to organize participants:
+            <div style={{ marginTop: 'var(--spacing-sm)', display: 'flex', gap: 'var(--spacing-sm)', flexWrap: 'wrap' }}>
+              {selectedHackathon && (
+                <Button
+                  variant="success"
+                  size="sm"
+                  onClick={handleAutoCreateTeams}
+                  loading={creatingTeams}
+                  disabled={creatingTeams}
+                >
+                  🚀 Auto-Create Individual Teams
+                </Button>
+              )}
+              <Button variant="primary" size="sm" onClick={() => navigate('/admin/teams')}>
+                📝 Manually Create/Assign Teams →
+              </Button>
             </div>
-          )}
+            <p style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-tertiary)', marginTop: 'var(--spacing-sm)' }}>
+              <strong>Individual teams:</strong> Each user gets their own team (solo participation)<br/>
+              <strong>Manual teams:</strong> Group multiple users into teams (team-based competition)
+            </p>
+          </Alert>
+
+          <div style={{ marginTop: 'var(--spacing-md)' }}>
+            <h3 style={{ marginBottom: 'var(--spacing-sm)' }}>Generated User Credentials:</h3>
+            <div className="table-container">
+              <table className="table">
+                <thead>
+                  <tr>
+                    <th>Full Name</th>
+                    <th>Username</th>
+                    <th>Password</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {result.credentials.map((cred) => (
+                    <tr key={cred.id}>
+                      <td>{cred.full_name}</td>
+                      <td>
+                        <code style={{ background: 'var(--color-bg-secondary)', padding: '4px 8px', borderRadius: 'var(--radius-sm)' }}>
+                          {cred.username}
+                        </code>
+                      </td>
+                      <td>
+                        <code style={{ background: 'var(--color-bg-secondary)', padding: '4px 8px', borderRadius: 'var(--radius-sm)', color: 'var(--color-success)' }}>
+                          {cred.password}
+                        </code>
+                      </td>
+                      <td style={{ color: 'var(--color-text-secondary)' }}>{cred.email || '—'}</td>
+                      <td>
+                        <span className={`badge ${cred.role === 'admin' ? 'badge-error' : cred.role === 'judge' ? 'badge-warning' : 'badge-info'}`}>
+                          {cred.role}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
         </Card>
       )}
     </div>

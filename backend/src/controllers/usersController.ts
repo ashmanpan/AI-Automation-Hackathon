@@ -128,24 +128,34 @@ export class UsersController {
           });
         } catch (error: any) {
           if (error.code === '23505') {
-            // Username exists, try with a number suffix
-            const usernameWithNumber = `${username}${Math.floor(Math.random() * 1000)}`;
-            const user = await UserModel.create({
-              username: usernameWithNumber,
-              password,
-              email: userData.email,
-              full_name: userData.full_name,
-              role: userData.role,
-            });
+            // Duplicate key - try with username suffix if it's username conflict
+            if (error.constraint === 'users_username_key') {
+              try {
+                const usernameWithNumber = `${username}${Math.floor(Math.random() * 1000)}`;
+                const user = await UserModel.create({
+                  username: usernameWithNumber,
+                  password,
+                  email: userData.email,
+                  full_name: userData.full_name,
+                  role: userData.role,
+                });
 
-            credentials.push({
-              id: user.id,
-              username: usernameWithNumber,
-              password,
-              full_name: userData.full_name,
-              email: userData.email,
-              role: userData.role,
-            });
+                credentials.push({
+                  id: user.id,
+                  username: usernameWithNumber,
+                  password,
+                  full_name: userData.full_name,
+                  email: userData.email,
+                  role: userData.role,
+                });
+              } catch (retryError: any) {
+                console.error(`Failed to create user ${userData.full_name}: ${retryError.message}`);
+                // Skip this user - email might be duplicate
+              }
+            } else {
+              // Email or other constraint violation - skip this user
+              console.error(`Skipping user ${userData.full_name}: duplicate ${error.constraint}`);
+            }
           } else {
             console.error('Error creating user:', error);
           }

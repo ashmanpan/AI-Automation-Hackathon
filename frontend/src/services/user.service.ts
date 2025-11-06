@@ -79,10 +79,27 @@ class UserService {
   }
 
   /**
-   * Bulk import users from CSV/JSON
+   * Bulk import users from CSV file (auto-generates credentials)
    */
-  async bulkImport(users: BulkImportUser[]): Promise<BulkImportResponse> {
-    const response = await api.post<BulkImportResponse>('/api/users/bulk-import', { users })
+  async bulkImport(file: File): Promise<{
+    message: string
+    credentials: Array<{
+      id: number
+      username: string
+      password: string
+      full_name: string
+      email: string | null
+      role: string
+    }>
+  }> {
+    const formData = new FormData()
+    formData.append('file', file)
+
+    const response = await api.post('/api/users/bulk', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    })
     return response.data
   }
 
@@ -90,10 +107,9 @@ class UserService {
    * Download user template CSV
    */
   async downloadTemplate(): Promise<Blob> {
-    const response = await api.get('/api/users/import-template', {
-      responseType: 'blob',
-    })
-    return response.data
+    // Generate template client-side since backend doesn't have this endpoint
+    const csvContent = 'full_name,email,role\nJohn Doe,john@example.com,participant\nJane Smith,jane@example.com,judge\n'
+    return new Blob([csvContent], { type: 'text/csv' })
   }
 
   /**
