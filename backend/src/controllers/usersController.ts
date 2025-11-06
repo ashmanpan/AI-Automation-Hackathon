@@ -111,16 +111,24 @@ export class UsersController {
         fs.createReadStream(req.file!.path)
           .pipe(csvParser())
           .on('data', (row) => {
+            console.log('[CSV Row]', row); // Debug: log each row
             // Expected columns: full_name, email, role (optional, defaults to 'participant')
-            if (row.full_name) {
+            // Handle both snake_case and variations
+            const fullName = row.full_name || row['Full Name'] || row.fullName || row.name;
+            if (fullName && fullName.trim()) {
+              const email = row.email || row.Email || null;
+              const role = row.role || row.Role || 'participant';
               results.push({
-                full_name: row.full_name.trim(),
-                email: row.email?.trim() || null,
-                role: row.role?.trim() || 'participant',
+                full_name: fullName.trim(),
+                email: email?.trim() || null,
+                role: role.trim().toLowerCase(),
               });
             }
           })
-          .on('end', resolve)
+          .on('end', () => {
+            console.log(`[CSV] Parsed ${results.length} rows from CSV`);
+            resolve();
+          })
           .on('error', reject);
       });
 
