@@ -3,6 +3,21 @@ import { ExerciseModel } from '../models/Exercise';
 import { TeamModel } from '../models/Team';
 
 export class ExercisesController {
+  /**
+   * Debug endpoint - get ALL exercises without filters
+   */
+  static async getAllDebug(req: Request, res: Response) {
+    try {
+      const { query: dbQuery } = require('../config/database');
+      const result = await dbQuery('SELECT id, hackathon_id, title, status, created_at FROM exercises ORDER BY created_at DESC');
+      console.log('[DEBUG] Total exercises in database:', result.rows.length);
+      res.json({ total: result.rows.length, exercises: result.rows });
+    } catch (error: any) {
+      console.error('Debug query error:', error);
+      res.status(500).json({ error: 'Internal server error', details: error.message });
+    }
+  }
+
   static async getAll(req: Request, res: Response) {
     try {
       const { hackathon_id, team_id, is_active, status } = req.query;

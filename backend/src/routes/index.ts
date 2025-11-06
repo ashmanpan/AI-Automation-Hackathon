@@ -66,6 +66,7 @@ router.post('/teams/:id/members', authenticateToken, requireAdmin, TeamsControll
 router.delete('/teams/:id/members/:userId', authenticateToken, requireAdmin, TeamsController.removeMember);
 
 // ==================== Exercises Routes ====================
+router.get('/exercises/debug/all', authenticateToken, requireAdmin, ExercisesController.getAllDebug);
 router.get('/exercises', authenticateToken, ExercisesController.getAll);
 router.get('/exercises/:id', authenticateToken, ExercisesController.getById);
 router.post('/exercises', authenticateToken, requireAdmin, ExercisesController.create);
