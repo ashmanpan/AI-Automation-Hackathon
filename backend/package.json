@@ -5,7 +5,7 @@
   "main": "dist/server.js",
   "scripts": {
     "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
-    "build": "tsc",
+    "build": "export GIT_COMMIT=$(git rev-parse HEAD 2>/dev/null || echo 'unknown') && export BUILD_TIME=$(date -u +%Y-%m-%dT%H:%M:%SZ) && tsc",
     "start": "node dist/server.js",
     "migrate": "node dist/config/migrate.js"
   },

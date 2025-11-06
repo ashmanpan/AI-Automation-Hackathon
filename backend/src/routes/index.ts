@@ -116,4 +116,15 @@ router.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
+// Build version check - shows current deployment info
+router.get('/version', (req, res) => {
+  res.json({
+    version: process.env.npm_package_version || '1.0.0',
+    commit: process.env.GIT_COMMIT || 'unknown',
+    buildTime: process.env.BUILD_TIME || 'unknown',
+    nodeVersion: process.version,
+    environment: process.env.NODE_ENV || 'development',
+  });
+});
+
 export default router;
