@@ -13,10 +13,51 @@ import {
  */
 class SubmissionService {
   /**
-   * Submit a flag for grading
+   * Submit a flag for grading (deprecated - kept for backwards compatibility)
    */
   async submitFlag(data: SubmitFlagRequest): Promise<SubmitFlagResponse> {
     const response = await api.post<SubmitFlagResponse>('/api/submissions', data)
+    return response.data
+  }
+
+  /**
+   * Submit a file
+   */
+  async submitFile(teamExerciseId: number, file: File): Promise<Submission> {
+    const formData = new FormData()
+    formData.append('team_exercise_id', teamExerciseId.toString())
+    formData.append('submission_type', 'file')
+    formData.append('file', file)
+
+    const response = await api.post<Submission>('/api/submissions', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    })
+    return response.data
+  }
+
+  /**
+   * Submit text content
+   */
+  async submitText(teamExerciseId: number, content: string): Promise<Submission> {
+    const response = await api.post<Submission>('/api/submissions', {
+      team_exercise_id: teamExerciseId,
+      submission_type: 'text',
+      content,
+    })
+    return response.data
+  }
+
+  /**
+   * Submit URL (GitHub link, website, etc.)
+   */
+  async submitUrl(teamExerciseId: number, url: string): Promise<Submission> {
+    const response = await api.post<Submission>('/api/submissions', {
+      team_exercise_id: teamExerciseId,
+      submission_type: 'url',
+      content: url,
+    })
     return response.data
   }
 
@@ -45,7 +86,9 @@ class SubmissionService {
    * Get team submissions
    */
   async getTeamSubmissions(teamId: number): Promise<Submission[]> {
-    const response = await api.get<{ submissions: Submission[] }>(`/api/teams/${teamId}/submissions`)
+    const response = await api.get<{ submissions: Submission[] }>('/api/submissions', {
+      params: { team_id: teamId }
+    })
     return response.data.submissions
   }
 

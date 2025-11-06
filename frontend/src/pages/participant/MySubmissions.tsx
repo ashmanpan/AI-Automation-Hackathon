@@ -20,15 +20,8 @@ const MySubmissions = () => {
     try {
       setLoading(true)
 
-      // Get user's team
-      const teams = await teamService.getAll()
-      const myTeam = teams.find(t => t.members?.some(m => m.user_id === user?.id))
-
-      if (!myTeam) {
-        setSubmissions([])
-        setLoading(false)
-        return
-      }
+      // Get user's team using the dedicated endpoint
+      const myTeam = await teamService.getMyTeam()
 
       // Get team submissions
       const data = await submissionService.getTeamSubmissions(myTeam.id)
@@ -41,7 +34,9 @@ const MySubmissions = () => {
 
       setSubmissions(filtered)
     } catch (error) {
-      toast.error('Failed to load submissions')
+      console.error('Failed to load submissions:', error)
+      toast.error('No team assigned or failed to load submissions')
+      setSubmissions([])
     } finally {
       setLoading(false)
     }
