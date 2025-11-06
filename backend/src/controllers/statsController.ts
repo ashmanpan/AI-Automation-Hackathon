@@ -145,30 +145,51 @@ export class StatsController {
       if (teamResult.rows.length === 0) {
         return res.json({
           hasTeam: false,
-          totalExercises: 0,
-          completedExercises: 0,
-          pendingExercises: 0,
-          totalScore: 0,
-          rank: null
+          total_exercises: 0,
+          solved_exercises: 0,
+          pending_submissions: 0,
+          total_score: 0,
+          team_rank: null
         });
       }
 
       const team = teamResult.rows[0];
 
-      // Get exercise stats
-      const exerciseStats = await pool.query(
-        `SELECT
-          COUNT(*) as total,
-          SUM(CASE WHEN te.status = 'submitted' OR te.status = 'graded' THEN 1 ELSE 0 END) as completed,
-          SUM(CASE WHEN te.status = 'pending' OR te.status = 'in_progress' THEN 1 ELSE 0 END) as pending
+      // Get total active exercises for this hackathon (ALL exercises, not just assigned)
+      const totalExercisesResult = await pool.query(
+        `SELECT COUNT(*) as total
+         FROM exercises
+         WHERE hackathon_id = $1 AND status = 'active'`,
+        [team.hackathon_id]
+      );
+
+      const totalExercises = parseInt(totalExercisesResult.rows[0]?.total || 0);
+
+      // Get solved exercises (exercises with graded submissions for this team)
+      const solvedExercisesResult = await pool.query(
+        `SELECT COUNT(DISTINCT te.exercise_id) as solved
          FROM team_exercises te
+         JOIN submissions s ON s.team_exercise_id = te.id
+         JOIN grades g ON g.submission_id = s.id
          WHERE te.team_id = $1`,
         [team.id]
       );
 
-      const stats = exerciseStats.rows[0];
+      const solvedExercises = parseInt(solvedExercisesResult.rows[0]?.solved || 0);
 
-      // Get team score and rank
+      // Get pending submissions (submissions without grades)
+      const pendingSubmissionsResult = await pool.query(
+        `SELECT COUNT(DISTINCT s.id) as pending
+         FROM team_exercises te
+         JOIN submissions s ON s.team_exercise_id = te.id
+         LEFT JOIN grades g ON g.submission_id = s.id
+         WHERE te.team_id = $1 AND g.id IS NULL`,
+        [team.id]
+      );
+
+      const pendingSubmissions = parseInt(pendingSubmissionsResult.rows[0]?.pending || 0);
+
+      // Get team score and rank from leaderboard
       const leaderboard = await pool.query(
         `SELECT total_score, rank
          FROM leaderboard
@@ -181,13 +202,13 @@ export class StatsController {
 
       res.json({
         hasTeam: true,
-        teamId: team.id,
-        teamName: team.name,
-        totalExercises: parseInt(stats.total),
-        completedExercises: parseInt(stats.completed),
-        pendingExercises: parseInt(stats.pending),
-        totalScore: parseFloat(score),
-        rank
+        team_id: team.id,
+        team_name: team.name,
+        total_exercises: totalExercises,
+        solved_exercises: solvedExercises,
+        pending_submissions: pendingSubmissions,
+        total_score: parseFloat(score),
+        team_rank: rank ? parseInt(rank) : null
       });
     } catch (error: any) {
       console.error('Get participant stats error:', error);
