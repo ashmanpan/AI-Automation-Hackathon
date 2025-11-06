@@ -7,7 +7,7 @@ import { uploadFile } from '../services/fileStorageService';
 export class SubmissionsController {
   static async getAll(req: Request, res: Response) {
     try {
-      let { hackathon_id, ungraded } = req.query;
+      let { hackathon_id, ungraded, team_id } = req.query;
 
       // If no hackathon_id provided, use the active hackathon
       if (!hackathon_id) {
@@ -26,7 +26,13 @@ export class SubmissionsController {
         return res.json({ submissions });
       }
 
-      const submissions = await SubmissionModel.findByHackathon(parseInt(hackathon_id as string));
+      let submissions = await SubmissionModel.findByHackathon(parseInt(hackathon_id as string));
+      
+      // Filter by team_id if provided
+      if (team_id) {
+        submissions = submissions.filter(s => s.team_id === parseInt(team_id as string));
+      }
+      
       return res.json({ submissions });
     } catch (error: any) {
       console.error('Get submissions error:', error);

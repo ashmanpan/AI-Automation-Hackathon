@@ -8,11 +8,10 @@ import toast from 'react-hot-toast'
 const MySubmissions = () => {
   const [submissions, setSubmissions] = useState<Submission[]>([])
   const [loading, setLoading] = useState(true)
-  const [filterCorrect, setFilterCorrect] = useState<string>('')
 
   useEffect(() => {
     loadSubmissions()
-  }, [filterCorrect])
+  }, [])
 
   const loadSubmissions = async () => {
     try {
@@ -24,13 +23,7 @@ const MySubmissions = () => {
       // Get team submissions
       const data = await submissionService.getTeamSubmissions(myTeam.id)
 
-      // Filter by result if selected
-      let filtered = data
-      if (filterCorrect !== '') {
-        filtered = data.filter(s => s.is_correct === (filterCorrect === 'true'))
-      }
-
-      setSubmissions(filtered)
+      setSubmissions(data)
     } catch (error) {
       console.error('Failed to load submissions:', error)
       toast.error('No team assigned or failed to load submissions')
@@ -44,9 +37,7 @@ const MySubmissions = () => {
     return <LoadingSpinner fullScreen text="Loading submissions..." />
   }
 
-  const correctCount = submissions.filter(s => s.is_correct).length
-  const incorrectCount = submissions.filter(s => !s.is_correct).length
-  const totalPoints = submissions.reduce((sum, s) => sum + s.points_awarded, 0)
+  const totalPoints = submissions.reduce((sum, s) => sum + (s.grade?.score || 0), 0)
 
   return (
     <div>
@@ -61,29 +52,13 @@ const MySubmissions = () => {
       </div>
 
       {/* Stats */}
-      <div className="grid-4" style={{ marginBottom: 'var(--spacing-lg)' }}>
+      <div className="grid-2" style={{ marginBottom: 'var(--spacing-lg)' }}>
         <Card compact>
           <div style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-tertiary)', marginBottom: 'var(--spacing-xs)' }}>
             Total Submissions
           </div>
           <div className="gradient-text" style={{ fontSize: 'var(--font-size-2xl)', fontWeight: 'bold' }}>
             {submissions.length}
-          </div>
-        </Card>
-        <Card compact>
-          <div style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-tertiary)', marginBottom: 'var(--spacing-xs)' }}>
-            Correct
-          </div>
-          <div style={{ fontSize: 'var(--font-size-2xl)', fontWeight: 'bold', color: 'var(--color-success)' }}>
-            {correctCount}
-          </div>
-        </Card>
-        <Card compact>
-          <div style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-tertiary)', marginBottom: 'var(--spacing-xs)' }}>
-            Incorrect
-          </div>
-          <div style={{ fontSize: 'var(--font-size-2xl)', fontWeight: 'bold', color: 'var(--color-error)' }}>
-            {incorrectCount}
           </div>
         </Card>
         <Card compact>
@@ -96,19 +71,6 @@ const MySubmissions = () => {
         </Card>
       </div>
 
-      {/* Filter */}
-      <Card style={{ marginBottom: 'var(--spacing-lg)' }}>
-        <Select
-          label="Filter by Result"
-          value={filterCorrect}
-          onChange={(e) => setFilterCorrect(e.target.value)}
-        >
-          <option value="">All Submissions</option>
-          <option value="true">Correct Only</option>
-          <option value="false">Incorrect Only</option>
-        </Select>
-      </Card>
-
       {/* Submissions Table */}
       {submissions.length === 0 ? (
         <Card>
@@ -116,7 +78,7 @@ const MySubmissions = () => {
             <div style={{ fontSize: '48px', marginBottom: 'var(--spacing-md)' }}>📭</div>
             <h3 style={{ marginBottom: 'var(--spacing-sm)' }}>No submissions yet</h3>
             <p style={{ color: 'var(--color-text-tertiary)' }}>
-              {filterCorrect ? 'Try adjusting your filters' : 'Start solving exercises to see your submissions here'}
+              Start solving exercises to see your submissions here
             </p>
           </div>
         </Card>
@@ -129,9 +91,8 @@ const MySubmissions = () => {
                   <th>Submitted At</th>
                   <th>Exercise</th>
                   <th>Submitted By</th>
-                  <th>Result</th>
                   <th>Points</th>
-                  <th>Graded</th>
+                  <th>Status</th>
                 </tr>
               </thead>
               <tbody>
@@ -154,22 +115,17 @@ const MySubmissions = () => {
                     <td>
                       <strong>{submission.exercise_title || `Exercise #${submission.exercise_id}`}</strong>
                     </td>
-                    <td>{submission.username || 'Unknown'}</td>
+                    <td>{submission.submitter_name || 'Unknown'}</td>
                     <td>
-                      <Badge variant={submission.is_correct ? 'success' : 'error'}>
-                        {submission.is_correct ? '✓ Correct' : '✗ Incorrect'}
-                      </Badge>
-                    </td>
-                    <td>
-                      <strong className={submission.points_awarded > 0 ? 'gradient-text' : ''}>
-                        +{submission.points_awarded}
+                      <strong className={(submission.grade?.score || 0) > 0 ? 'gradient-text' : ''}>
+                        {submission.grade?.score || 0}
                       </strong>
                     </td>
                     <td>
-                      {submission.graded_at ? (
-                        <Badge variant="success">✓ Graded</Badge>
+                      {submission.grade?.graded_at ? (
+                        <Badge variant="success">Graded</Badge>
                       ) : (
-                        <Badge variant="warning">⏳ Pending</Badge>
+                        <Badge variant="warning">Pending</Badge>
                       )}
                     </td>
                   </tr>
