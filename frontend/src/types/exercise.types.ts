@@ -16,6 +16,10 @@ export interface Exercise {
   end_time: string | null
   status: 'draft' | 'active' | 'completed' | 'cancelled'
   created_at: string
+  team_exercise_id?: number // Junction table ID when fetched by team
+  assignment_status?: string // Status from team_exercises
+  assigned_at?: string
+  started_at?: string | null
   flags?: Flag[]
   hints?: Hint[]
   attachments?: Attachment[]
