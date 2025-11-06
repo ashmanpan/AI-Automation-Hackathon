@@ -2,6 +2,7 @@ import { ReactNode } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useAuthStore } from '@/store/authStore'
 import { Navbar, Sidebar } from '@/components/common'
+import { HackathonSelector } from '@/components/common/HackathonSelector'
 
 interface AdminLayoutProps {
   children: ReactNode
@@ -14,6 +15,7 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
 
   const navItems = [
     { path: '/admin/dashboard', label: 'Dashboard', icon: '📊' },
+    { path: '/admin/hackathons', label: 'Hackathons', icon: '📅' },
     { path: '/admin/users/import', label: 'Import Users', icon: '📥' },
     { path: '/admin/teams', label: 'Manage Teams', icon: '🏆' },
     { path: '/admin/exercises', label: 'Manage Exercises', icon: '📝' },
@@ -31,7 +33,9 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
       <Navbar
         user={user}
         onLogout={handleLogout}
-      />
+      >
+        <HackathonSelector />
+      </Navbar>
 
       <div style={{ display: 'flex', flex: 1 }}>
         <Sidebar

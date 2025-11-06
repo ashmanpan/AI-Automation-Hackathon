@@ -1,6 +1,8 @@
+import { useEffect } from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
 import { ErrorBoundary } from './components/common'
+import { useAuthStore } from './store/authStore'
 import Login from './pages/Login'
 import { AdminRoute, JudgeRoute, ParticipantRoute } from './components/auth/ProtectedRoute'
 import AdminLayout from './components/layouts/AdminLayout'
@@ -10,9 +12,13 @@ import ParticipantLayout from './components/layouts/ParticipantLayout'
 // Admin pages
 import AdminDashboard from './pages/admin/AdminDashboard'
 import ImportUsers from './pages/admin/ImportUsers'
+import ManageHackathons from './pages/admin/ManageHackathons'
+import CreateHackathon from './pages/admin/CreateHackathon'
 import ManageTeams from './pages/admin/ManageTeams'
+import TeamDetails from './pages/admin/TeamDetails'
 import ManageExercises from './pages/admin/ManageExercises'
 import CreateExercise from './pages/admin/CreateExercise'
+import EditExercise from './pages/admin/EditExercise'
 
 // Judge pages
 import JudgeDashboard from './pages/judge/JudgeDashboard'
@@ -30,6 +36,13 @@ import MySubmissions from './pages/participant/MySubmissions'
 import Leaderboard from './pages/public/Leaderboard'
 
 function App() {
+  const initialize = useAuthStore((state) => state.initialize)
+
+  // Initialize auth state from localStorage on app startup
+  useEffect(() => {
+    initialize()
+  }, [initialize])
+
   return (
     <ErrorBoundary>
       <BrowserRouter>
@@ -71,11 +84,41 @@ function App() {
           }
         />
         <Route
+          path="/admin/hackathons"
+          element={
+            <AdminRoute>
+              <AdminLayout>
+                <ManageHackathons />
+              </AdminLayout>
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/hackathons/create"
+          element={
+            <AdminRoute>
+              <AdminLayout>
+                <CreateHackathon />
+              </AdminLayout>
+            </AdminRoute>
+          }
+        />
+        <Route
           path="/admin/teams"
           element={
             <AdminRoute>
               <AdminLayout>
                 <ManageTeams />
+              </AdminLayout>
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/teams/:id"
+          element={
+            <AdminRoute>
+              <AdminLayout>
+                <TeamDetails />
               </AdminLayout>
             </AdminRoute>
           }
@@ -96,6 +139,16 @@ function App() {
             <AdminRoute>
               <AdminLayout>
                 <CreateExercise />
+              </AdminLayout>
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/exercises/:id"
+          element={
+            <AdminRoute>
+              <AdminLayout>
+                <EditExercise />
               </AdminLayout>
             </AdminRoute>
           }
