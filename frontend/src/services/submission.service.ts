@@ -69,6 +69,8 @@ class SubmissionService {
     team_id?: number
     user_id?: number
     is_correct?: boolean
+    hackathon_id?: number
+    ungraded?: boolean
   }): Promise<Submission[]> {
     const response = await api.get<{ submissions: Submission[] }>('/api/submissions', { params })
     return response.data.submissions

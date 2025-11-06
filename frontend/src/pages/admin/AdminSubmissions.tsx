@@ -43,7 +43,7 @@ const AdminSubmissions = () => {
     }
   }
 
-  const getStatusBadgeVariant = (status: string) => {
+  const getStatusBadgeVariant = (status?: string) => {
     switch (status) {
       case 'graded':
         return 'success'
@@ -54,7 +54,7 @@ const AdminSubmissions = () => {
     }
   }
 
-  const getSubmissionTypeBadge = (type: string) => {
+  const getSubmissionTypeBadge = (type?: string) => {
     switch (type) {
       case 'file':
         return { label: 'File', variant: 'primary' as const }
@@ -63,7 +63,7 @@ const AdminSubmissions = () => {
       case 'url':
         return { label: 'URL', variant: 'secondary' as const }
       default:
-        return { label: type, variant: 'secondary' as const }
+        return { label: type || 'Unknown', variant: 'secondary' as const }
     }
   }
 

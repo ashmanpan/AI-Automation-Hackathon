@@ -16,6 +16,12 @@ export interface Submission {
   exercise_title?: string
   team_name?: string
   username?: string
+  // Extended properties for admin/judge views
+  status?: 'pending' | 'graded' | 'reviewing'
+  submission_type?: 'flag' | 'file' | 'text' | 'url'
+  submitted_by_name?: string
+  score?: number | null
+  max_score?: number
 }
 
 export interface SubmitFlagRequest {
