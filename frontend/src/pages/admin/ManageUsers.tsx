@@ -510,7 +510,7 @@ const ManageUsers = () => {
                         </Badge>
                       </td>
                       <td style={{ color: 'var(--color-text-tertiary)', fontSize: 'var(--font-size-sm)' }}>
-                        {new Date(user.created_at).toLocaleDateString()}
+                        {user.created_at ? new Date(user.created_at).toLocaleDateString() : 'N/A'}
                       </td>
                       <td>
                         <Button
