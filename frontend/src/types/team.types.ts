@@ -5,9 +5,10 @@
 export interface Team {
   id: number
   name: string
+  hackathon_id: number
   description?: string
   created_at: string
-  updated_at: string
+  updated_at?: string
   member_count?: number
   members?: TeamMember[]
   score?: number
@@ -25,6 +26,7 @@ export interface TeamMember {
 }
 
 export interface CreateTeamRequest {
+  hackathon_id?: number
   name: string
   description?: string
 }

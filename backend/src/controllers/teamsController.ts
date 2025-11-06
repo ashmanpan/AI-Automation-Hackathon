@@ -11,7 +11,7 @@ export class TeamsController {
       }
 
       const teams = await TeamModel.findByHackathon(parseInt(hackathon_id as string));
-      res.json(teams);
+      res.json({ teams });
     } catch (error: any) {
       console.error('Get teams error:', error);
       res.status(500).json({ error: 'Internal server error' });
@@ -27,9 +27,25 @@ export class TeamsController {
         return res.status(404).json({ error: 'Team not found' });
       }
 
-      res.json(team);
+      res.json({ team });
     } catch (error: any) {
       console.error('Get team error:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  }
+
+  static async getMembers(req: Request, res: Response) {
+    try {
+      const { id } = req.params;
+      const team = await TeamModel.findByIdWithMembers(parseInt(id));
+
+      if (!team) {
+        return res.status(404).json({ error: 'Team not found' });
+      }
+
+      res.json({ members: team.members });
+    } catch (error: any) {
+      console.error('Get team members error:', error);
       res.status(500).json({ error: 'Internal server error' });
     }
   }
@@ -43,7 +59,7 @@ export class TeamsController {
       }
 
       const team = await TeamModel.create(name, hackathon_id);
-      res.status(201).json(team);
+      res.status(201).json({ team });
     } catch (error: any) {
       console.error('Create team error:', error);
 
@@ -70,7 +86,7 @@ export class TeamsController {
         return res.status(404).json({ error: 'Team not found' });
       }
 
-      res.json(team);
+      res.json({ team });
     } catch (error: any) {
       console.error('Update team error:', error);
       res.status(500).json({ error: 'Internal server error' });
@@ -137,9 +153,30 @@ export class TeamsController {
       const participants = await TeamModel.getUnassignedParticipants(
         parseInt(hackathon_id as string)
       );
-      res.json(participants);
+      res.json({ participants });
     } catch (error: any) {
       console.error('Get unassigned participants error:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  }
+
+  static async getMyTeam(req: Request, res: Response) {
+    try {
+      const userId = req.user?.userId;
+
+      if (!userId) {
+        return res.status(401).json({ error: 'Unauthorized' });
+      }
+
+      const team = await TeamModel.findByUserId(userId);
+
+      if (!team) {
+        return res.status(404).json({ error: 'No team assigned' });
+      }
+
+      res.json({ team });
+    } catch (error: any) {
+      console.error('Get my team error:', error);
       res.status(500).json({ error: 'Internal server error' });
     }
   }

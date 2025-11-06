@@ -1,10 +1,14 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Card, Button, Input, Modal, ConfirmModal, LoadingSpinner, Badge } from '@/components/common'
+import { useHackathonStore } from '@/store/hackathonStore'
 import teamService from '@/services/team.service'
 import { Team, CreateTeamRequest } from '@/types/team.types'
 import toast from 'react-hot-toast'
 
 const ManageTeams = () => {
+  const navigate = useNavigate()
+  const { selectedHackathon } = useHackathonStore()
   const [teams, setTeams] = useState<Team[]>([])
   const [loading, setLoading] = useState(true)
   const [showCreateModal, setShowCreateModal] = useState(false)
@@ -16,13 +20,20 @@ const ManageTeams = () => {
   })
 
   useEffect(() => {
-    loadTeams()
-  }, [])
+    if (selectedHackathon) {
+      loadTeams()
+    }
+  }, [selectedHackathon])
 
   const loadTeams = async () => {
     try {
       setLoading(true)
-      const data = await teamService.getAll()
+      const params: any = {}
+      if (selectedHackathon) params.hackathon_id = selectedHackathon.id
+
+      const data = await teamService.getAll(params)
+      console.log('📊 Loaded teams:', data)
+      console.log('📊 Team IDs:', data.map(t => ({ id: t.id, name: t.name })))
       setTeams(data)
     } catch (error) {
       toast.error('Failed to load teams')
@@ -32,13 +43,21 @@ const ManageTeams = () => {
   }
 
   const handleCreate = async () => {
+    if (!selectedHackathon) {
+      toast.error('Please select a hackathon first')
+      return
+    }
+
     if (!formData.name.trim()) {
       toast.error('Team name is required')
       return
     }
 
     try {
-      await teamService.create(formData)
+      await teamService.create({
+        ...formData,
+        hackathon_id: selectedHackathon.id,
+      })
       toast.success('Team created successfully')
       setShowCreateModal(false)
       setFormData({ name: '', description: '' })
@@ -117,7 +136,7 @@ const ManageTeams = () => {
                     </p>
                   )}
                 </div>
-                <Badge variant="info">{team.member_count || 0} members</Badge>
+                <Badge variant="info">{team.members?.length || 0} members</Badge>
               </div>
 
               {team.score !== undefined && (
@@ -138,7 +157,13 @@ const ManageTeams = () => {
                   variant="outline"
                   size="sm"
                   block
-                  onClick={() => window.location.href = `/admin/teams/${team.id}`}
+                  onClick={() => {
+                    if (team.id && !isNaN(team.id)) {
+                      navigate(`/admin/teams/${team.id}`)
+                    } else {
+                      toast.error('Invalid team ID')
+                    }
+                  }}
                 >
                   View Details
                 </Button>

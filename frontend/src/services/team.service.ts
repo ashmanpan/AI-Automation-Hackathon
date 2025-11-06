@@ -9,8 +9,8 @@ class TeamService {
   /**
    * Get all teams
    */
-  async getAll(): Promise<Team[]> {
-    const response = await api.get<{ teams: Team[] }>('/api/teams')
+  async getAll(params?: { hackathon_id?: number }): Promise<Team[]> {
+    const response = await api.get<{ teams: Team[] }>('/api/teams', { params })
     return response.data.teams
   }
 
@@ -19,6 +19,14 @@ class TeamService {
    */
   async getById(id: number): Promise<Team> {
     const response = await api.get<{ team: Team }>(`/api/teams/${id}`)
+    return response.data.team
+  }
+
+  /**
+   * Get current user's team
+   */
+  async getMyTeam(): Promise<Team> {
+    const response = await api.get<{ team: Team }>('/api/teams/my-team')
     return response.data.team
   }
 
@@ -56,9 +64,18 @@ class TeamService {
   /**
    * Add member to team
    */
-  async addMember(teamId: number, data: AddTeamMemberRequest): Promise<TeamMember> {
-    const response = await api.post<{ member: TeamMember }>(`/api/teams/${teamId}/members`, data)
-    return response.data.member
+  async addMember(teamId: number, userId: number): Promise<void> {
+    await api.post(`/api/teams/${teamId}/members`, { user_id: userId })
+  }
+
+  /**
+   * Get unassigned participants for a hackathon
+   */
+  async getUnassignedParticipants(hackathonId: number): Promise<any[]> {
+    const response = await api.get<{ participants: any[] }>(`/api/teams/unassigned`, {
+      params: { hackathon_id: hackathonId }
+    })
+    return response.data.participants
   }
 
   /**

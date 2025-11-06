@@ -51,7 +51,8 @@ export class TeamModel {
     const team = teamResult.rows[0];
 
     const membersResult = await query(
-      `SELECT u.id as user_id, u.username, u.full_name, u.email
+      `SELECT u.id, u.username, u.full_name, u.email, u.role,
+              u.created_at, tm.joined_at
        FROM team_members tm
        JOIN users u ON tm.user_id = u.id
        WHERE tm.team_id = $1
@@ -78,7 +79,8 @@ export class TeamModel {
 
     for (const team of teamsResult.rows) {
       const membersResult = await query(
-        `SELECT u.id as user_id, u.username, u.full_name, u.email
+        `SELECT u.id, u.username, u.full_name, u.email, u.role,
+                u.created_at, tm.joined_at
          FROM team_members tm
          JOIN users u ON tm.user_id = u.id
          WHERE tm.team_id = $1
