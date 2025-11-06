@@ -4,7 +4,7 @@ Welcome to the Hackathon Platform! This guide will help you navigate the platfor
 
 ## Motivation
 
-The goal of the hackathon is to allow you to gain a better understanding of how AI can be integrated in order to quickly generate workflows for Cisco Crosswork Workflow Manager, improving development agility. This is not a perfect solution and still needs work in order to be completely foolproof, but it should provide a general proof-of-concept.
+The goal of the hackathon is to allow you to gain a better understanding of how AI can be integrated in order to quickly generate workflows for Cisco Crosswork Workflow Manager, improving development agility. The intention of the hackathon is not to provide you with a ready-made solution, but to give you ideas on how AI coding capabilities can be integrated with your development process.
 
 ## Getting Started
 
@@ -14,7 +14,13 @@ The goal of the hackathon is to allow you to gain a better understanding of how 
 3. Enter your email address.
 4. Click to accept the dCloud Terms & Conditions, and click Continue to receive your session.
 5. Click Launch to jump into your session.
-6. Access the workstation using WebRDP option.
+6. Access the workstation using Remote Desktop option.
+
+### Accessing Any1CanCode platform
+1. Once logged into the workstation via Remote Desktop, click on the Any1CanCode Launcher on the desktop.
+2. A terminal window will launch, and then a chrome window will open.
+3. NOTICE: If the page doesn't load, just reload after waiting a couple seconds.
+4. Select the 'hackathon' project and begin chatting with the agent.
 
 ### Dashboard Overview
 Your dashboard shows:
