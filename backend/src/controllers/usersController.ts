@@ -113,11 +113,11 @@ export class UsersController {
           .on('data', (row) => {
             console.log('[CSV Row]', row); // Debug: log each row
             // Expected columns: full_name, email, role (optional, defaults to 'participant')
-            // Handle both snake_case and variations
-            const fullName = row.full_name || row['Full Name'] || row.fullName || row.name;
+            // Handle both snake_case and variations (csv-parser converts headers to lowercase)
+            const fullName = row.full_name || row['full name'] || row['Full Name'] || row.fullName || row.name;
             if (fullName && fullName.trim()) {
-              const email = row.email || row.Email || null;
-              const role = row.role || row.Role || 'participant';
+              const email = row.email || row['Email'] || null;
+              const role = row.role || row['Role'] || 'participant';
               results.push({
                 full_name: fullName.trim(),
                 email: email?.trim() || null,
