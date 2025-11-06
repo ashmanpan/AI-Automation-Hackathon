@@ -19,6 +19,8 @@ import TeamDetails from './pages/admin/TeamDetails'
 import ManageExercises from './pages/admin/ManageExercises'
 import CreateExercise from './pages/admin/CreateExercise'
 import EditExercise from './pages/admin/EditExercise'
+import AdminSubmissions from './pages/admin/AdminSubmissions'
+import AdminLeaderboard from './pages/admin/AdminLeaderboard'
 
 // Judge pages
 import JudgeDashboard from './pages/judge/JudgeDashboard'
@@ -31,6 +33,7 @@ import ParticipantDashboard from './pages/participant/ParticipantDashboard'
 import ExerciseList from './pages/participant/ExerciseList'
 import ExerciseDetail from './pages/participant/ExerciseDetail'
 import MySubmissions from './pages/participant/MySubmissions'
+import UserGuide from './pages/participant/UserGuide'
 
 // Public pages
 import Leaderboard from './pages/public/Leaderboard'
@@ -153,6 +156,26 @@ function App() {
             </AdminRoute>
           }
         />
+        <Route
+          path="/admin/submissions"
+          element={
+            <AdminRoute>
+              <AdminLayout>
+                <AdminSubmissions />
+              </AdminLayout>
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/leaderboard"
+          element={
+            <AdminRoute>
+              <AdminLayout>
+                <AdminLeaderboard />
+              </AdminLayout>
+            </AdminRoute>
+          }
+        />
 
         {/* Judge Routes - Protected */}
         <Route
@@ -233,6 +256,16 @@ function App() {
             <ParticipantRoute>
               <ParticipantLayout>
                 <MySubmissions />
+              </ParticipantLayout>
+            </ParticipantRoute>
+          }
+        />
+        <Route
+          path="/participant/guide"
+          element={
+            <ParticipantRoute>
+              <ParticipantLayout>
+                <UserGuide />
               </ParticipantLayout>
             </ParticipantRoute>
           }

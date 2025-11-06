@@ -16,6 +16,7 @@ const ParticipantLayout = ({ children }: ParticipantLayoutProps) => {
     { path: '/participant/dashboard', label: 'Dashboard', icon: '📊' },
     { path: '/participant/exercises', label: 'Browse Exercises', icon: '📝' },
     { path: '/participant/submissions', label: 'My Submissions', icon: '📨' },
+    { path: '/participant/guide', label: 'User Guide', icon: '📖' },
     { path: '/leaderboard', label: 'Leaderboard', icon: '🏅' },
   ]
 

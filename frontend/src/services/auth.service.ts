@@ -121,7 +121,7 @@ class AuthService {
       case 'judge':
         return '/judge/dashboard'
       case 'participant':
-        return '/participant/dashboard'
+        return '/participant/guide'
       default:
         return '/login'
     }
