@@ -41,19 +41,32 @@ const ExerciseDetail = () => {
 
       // Get team first
       const myTeam = await teamService.getMyTeam()
+      console.log('My team:', myTeam)
 
       // Get exercises for this team - response includes team_exercise_id
       const exercises = await exerciseService.getAll({ team_id: myTeam.id })
+      console.log('Exercises for team:', exercises)
+      console.log('Looking for exercise ID:', exerciseId)
       
       // Find the specific exercise we're viewing
       const exerciseData = exercises.find(ex => ex.id === parseInt(exerciseId))
+      console.log('Found exercise data:', exerciseData)
       
       if (!exerciseData) {
+        console.error('Exercise not found in team exercises list')
         toast.error('Exercise not found or not assigned to your team')
         navigate('/participant/exercises')
         return
       }
 
+      if (!exerciseData.team_exercise_id) {
+        console.error('team_exercise_id missing from exercise data:', exerciseData)
+        toast.error('Invalid exercise data')
+        navigate('/participant/exercises')
+        return
+      }
+
+      console.log('Setting team_exercise_id to:', exerciseData.team_exercise_id)
       setExercise(exerciseData)
       setTeamExerciseId(exerciseData.team_exercise_id)
 
