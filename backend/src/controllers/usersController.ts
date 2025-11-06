@@ -78,11 +78,13 @@ export class UsersController {
    * Auto-generates username and password
    */
   static async bulkCreate(req: Request, res: Response) {
+    let filePath: string | undefined;
     try {
       if (!req.file) {
         return res.status(400).json({ error: 'CSV file is required' });
       }
 
+      filePath = req.file.path;
       const results: any[] = [];
       const credentials: any[] = [];
 
@@ -163,7 +165,13 @@ export class UsersController {
       }
 
       // Clean up uploaded file
-      fs.unlinkSync(req.file.path);
+      if (filePath) {
+        try {
+          fs.unlinkSync(filePath);
+        } catch (unlinkError) {
+          console.error('Error deleting temp file:', unlinkError);
+        }
+      }
 
       res.status(201).json({
         message: `${credentials.length} users created successfully`,
@@ -171,7 +179,22 @@ export class UsersController {
       });
     } catch (error: any) {
       console.error('Bulk create users error:', error);
-      res.status(500).json({ error: 'Internal server error' });
+      console.error('Error details:', {
+        message: error.message,
+        stack: error.stack,
+        file: filePath
+      });
+
+      // Clean up uploaded file on error
+      if (filePath) {
+        try {
+          fs.unlinkSync(filePath);
+        } catch (unlinkError) {
+          console.error('Error deleting temp file on error:', unlinkError);
+        }
+      }
+
+      res.status(500).json({ error: 'Internal server error: ' + error.message });
     }
   }
 

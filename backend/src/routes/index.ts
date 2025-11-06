@@ -13,9 +13,12 @@ import { authenticateToken, requireAdmin, requireAdminOrJudge } from '../middlew
 const router = Router();
 
 // Configure multer for file uploads
+// Use /tmp for serverless environments (AWS Lambda), uploads/ for local
+const uploadDir = process.env.AWS_EXECUTION_ENV ? '/tmp' : 'uploads/';
+
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, 'uploads/');
+    cb(null, uploadDir);
   },
   filename: (req, file, cb) => {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
