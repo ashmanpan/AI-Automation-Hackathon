@@ -1,13 +1,11 @@
 import { useState, useEffect } from 'react'
 import { Card, LoadingSpinner, Badge, Select } from '@/components/common'
-import { useAuthStore } from '@/store/authStore'
 import submissionService from '@/services/submission.service'
 import teamService from '@/services/team.service'
 import { Submission } from '@/types/submission.types'
 import toast from 'react-hot-toast'
 
 const MySubmissions = () => {
-  const { user } = useAuthStore()
   const [submissions, setSubmissions] = useState<Submission[]>([])
   const [loading, setLoading] = useState(true)
   const [filterCorrect, setFilterCorrect] = useState<string>('')

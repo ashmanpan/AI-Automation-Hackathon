@@ -1,14 +1,6 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-
-interface Hackathon {
-  id: number
-  name: string
-  description?: string
-  status: string
-  start_time?: string
-  end_time?: string
-}
+import { Hackathon } from '@/types/hackathon.types'
 
 interface HackathonStore {
   selectedHackathon: Hackathon | null

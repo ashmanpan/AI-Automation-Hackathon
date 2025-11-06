@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useHackathonStore } from '@/store/hackathonStore'
 import hackathonService from '@/services/hackathon.service'
-import { Select } from './Select'
 
 export const HackathonSelector = () => {
   const { selectedHackathon, setSelectedHackathon } = useHackathonStore()

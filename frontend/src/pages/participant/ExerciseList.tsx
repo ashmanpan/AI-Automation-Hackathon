@@ -10,7 +10,6 @@ const ExerciseList = () => {
   const navigate = useNavigate()
   const [exercises, setExercises] = useState<Exercise[]>([])
   const [loading, setLoading] = useState(true)
-  const [hackathonId, setHackathonId] = useState<number | null>(null)
 
   useEffect(() => {
     loadTeamAndExercises()
@@ -20,7 +19,6 @@ const ExerciseList = () => {
     try {
       setLoading(true)
       const myTeam = await teamService.getMyTeam()
-      setHackathonId(myTeam.hackathon_id)
 
       // Load exercises for this team's hackathon
       const data = await exerciseService.getAll({

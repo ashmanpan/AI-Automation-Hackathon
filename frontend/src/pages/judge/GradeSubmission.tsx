@@ -60,7 +60,7 @@ const GradeSubmission = () => {
     if (exercise) {
       setGradingData({
         is_correct: true,
-        points_awarded: exercise.points,
+        points_awarded: exercise.points || exercise.max_score,
         feedback: 'Correct submission!',
       })
     }
@@ -139,19 +139,21 @@ const GradeSubmission = () => {
                 {exercise.title}
               </h3>
               <div style={{ display: 'flex', gap: 'var(--spacing-sm)', marginBottom: 'var(--spacing-md)' }}>
-                <Badge variant="info">{exercise.category}</Badge>
-                <Badge
-                  variant={
-                    exercise.difficulty === 'easy'
-                      ? 'success'
-                      : exercise.difficulty === 'medium'
-                      ? 'warning'
-                      : 'error'
-                  }
-                >
-                  {exercise.difficulty}
-                </Badge>
-                <Badge variant="secondary">{exercise.points} points</Badge>
+                {exercise.category && <Badge variant="info">{exercise.category}</Badge>}
+                {exercise.difficulty && (
+                  <Badge
+                    variant={
+                      exercise.difficulty === 'easy'
+                        ? 'success'
+                        : exercise.difficulty === 'medium'
+                        ? 'warning'
+                        : 'error'
+                    }
+                  >
+                    {exercise.difficulty}
+                  </Badge>
+                )}
+                <Badge variant="secondary">{exercise.points || exercise.max_score} points</Badge>
               </div>
             </div>
 
@@ -166,7 +168,7 @@ const GradeSubmission = () => {
                   borderRadius: 'var(--radius-md)',
                   color: 'var(--color-text-secondary)',
                 }}
-                dangerouslySetInnerHTML={{ __html: exercise.description }}
+                dangerouslySetInnerHTML={{ __html: exercise.description || '' }}
               />
             </div>
           </Card>
@@ -227,7 +229,7 @@ const GradeSubmission = () => {
                 onClick={handleAccept}
                 block
               >
-                ✓ Accept ({exercise.points} pts)
+                ✓ Accept ({exercise.points || exercise.max_score} pts)
               </Button>
               <Button
                 variant={!gradingData.is_correct ? 'error' : 'outline'}
@@ -245,7 +247,7 @@ const GradeSubmission = () => {
               onChange={(e) =>
                 setGradingData({ ...gradingData, points_awarded: parseInt(e.target.value) || 0 })
               }
-              help={`Maximum points for this exercise: ${exercise.points}`}
+              help={`Maximum points for this exercise: ${exercise.points || exercise.max_score}`}
             />
 
             <Textarea
@@ -299,7 +301,7 @@ const GradeSubmission = () => {
                   Max Points
                 </div>
                 <div className="gradient-text" style={{ fontSize: 'var(--font-size-2xl)', fontWeight: 'bold' }}>
-                  {exercise.points}
+                  {exercise.points || exercise.max_score}
                 </div>
               </div>
             </div>

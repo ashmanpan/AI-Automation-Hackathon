@@ -148,7 +148,7 @@ const EditExercise = () => {
               Active
             </Button>
             <Button
-              variant={exercise.status === 'completed' ? 'info' : 'secondary'}
+              variant={exercise.status === 'completed' ? 'primary' : 'secondary'}
               size="sm"
               onClick={() => handleStatusChange('completed')}
               disabled={exercise.status === 'completed'}

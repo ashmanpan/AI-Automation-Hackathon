@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { Card, Button, Input, Alert, LoadingSpinner, Badge, Select } from '@/components/common'
+import { Card, Button, Input, Alert, LoadingSpinner, Badge } from '@/components/common'
 import exerciseService from '@/services/exercise.service'
 import submissionService from '@/services/submission.service'
 import teamService from '@/services/team.service'
@@ -75,14 +75,13 @@ const ExerciseDetail = () => {
     try {
       setSubmitting(true)
 
-      let response
       switch (submissionType) {
         case 'file':
           if (!selectedFile) {
             toast.error('Please select a file to upload')
             return
           }
-          response = await submissionService.submitFile(teamExerciseId, selectedFile)
+          await submissionService.submitFile(teamExerciseId, selectedFile)
           toast.success('File uploaded successfully! ✅')
           break
 
@@ -91,7 +90,7 @@ const ExerciseDetail = () => {
             toast.error('Please enter some content')
             return
           }
-          response = await submissionService.submitText(teamExerciseId, textContent)
+          await submissionService.submitText(teamExerciseId, textContent)
           toast.success('Text submitted successfully! ✅')
           break
 
@@ -100,7 +99,7 @@ const ExerciseDetail = () => {
             toast.error('Please enter a URL')
             return
           }
-          response = await submissionService.submitUrl(teamExerciseId, urlContent)
+          await submissionService.submitUrl(teamExerciseId, urlContent)
           toast.success('URL submitted successfully! ✅')
           break
       }

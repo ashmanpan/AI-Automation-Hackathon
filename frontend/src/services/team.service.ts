@@ -1,5 +1,5 @@
 import api from './api'
-import { Team, CreateTeamRequest, UpdateTeamRequest, AddTeamMemberRequest, TeamMember } from '@/types/team.types'
+import { Team, CreateTeamRequest, UpdateTeamRequest, TeamMember } from '@/types/team.types'
 
 /**
  * Team Service

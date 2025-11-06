@@ -21,6 +21,10 @@ export interface Exercise {
   attachments?: Attachment[]
   submission_count?: number
   solve_count?: number
+  // Legacy properties for backward compatibility
+  points?: number
+  category?: string
+  difficulty?: 'easy' | 'medium' | 'hard'
 }
 
 export interface Flag {

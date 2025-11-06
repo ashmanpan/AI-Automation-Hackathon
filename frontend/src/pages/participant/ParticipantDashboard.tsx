@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Card, StatsCard, Button, LoadingSpinner, Badge } from '@/components/common'
-import { useAuthStore } from '@/store/authStore'
 import leaderboardService from '@/services/leaderboard.service'
 import exerciseService from '@/services/exercise.service'
 import submissionService from '@/services/submission.service'
@@ -14,7 +13,6 @@ import toast from 'react-hot-toast'
 
 const ParticipantDashboard = () => {
   const navigate = useNavigate()
-  const { user } = useAuthStore()
   const [stats, setStats] = useState<ParticipantStats | null>(null)
   const [team, setTeam] = useState<Team | null>(null)
   const [exercises, setExercises] = useState<Exercise[]>([])
@@ -117,7 +115,7 @@ const ParticipantDashboard = () => {
         <StatsCard
           title="Pending Review"
           value={stats?.pending_submissions || 0}
-          variant="secondary"
+          variant="warning"
         />
       </div>
 
