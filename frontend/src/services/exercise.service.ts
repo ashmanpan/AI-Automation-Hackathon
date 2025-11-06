@@ -27,8 +27,12 @@ class ExerciseService {
     type?: string;
     team_id?: number;
   }): Promise<Exercise[]> {
-    const response = await api.get<{ exercises: Exercise[] }>('/api/exercises', { params })
-    return response.data.exercises || []
+    const response = await api.get<{ exercises: Exercise[] } | Exercise[]>('/api/exercises', { params })
+    // Handle both wrapped { exercises: [...] } and unwrapped [...] responses
+    if (Array.isArray(response.data)) {
+      return response.data
+    }
+    return (response.data as { exercises: Exercise[] }).exercises || []
   }
 
   /**
