@@ -43,8 +43,12 @@ class UserService {
    * Get all users
    */
   async getAll(params?: { role?: string; search?: string }): Promise<User[]> {
-    const response = await api.get<{ users: User[] }>('/api/users', { params })
-    return response.data.users
+    const response = await api.get<User[] | { users: User[] }>('/api/users', { params })
+    // Handle both wrapped and unwrapped responses
+    if (Array.isArray(response.data)) {
+      return response.data
+    }
+    return (response.data as { users: User[] }).users || []
   }
 
   /**
@@ -59,8 +63,12 @@ class UserService {
    * Create new user
    */
   async create(data: CreateUserRequest): Promise<User> {
-    const response = await api.post<{ user: User }>('/api/users', data)
-    return response.data.user
+    const response = await api.post<User | { user: User }>('/api/users', data)
+    // Handle both wrapped and unwrapped responses
+    if ('id' in response.data && 'username' in response.data) {
+      return response.data as User
+    }
+    return (response.data as { user: User }).user
   }
 
   /**

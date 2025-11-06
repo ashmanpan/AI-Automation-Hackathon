@@ -16,7 +16,7 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
   const navItems = [
     { path: '/admin/dashboard', label: 'Dashboard', icon: '📊' },
     { path: '/admin/hackathons', label: 'Hackathons', icon: '📅' },
-    { path: '/admin/users/import', label: 'Import Users', icon: '📥' },
+    { path: '/admin/users', label: 'Manage Users', icon: '👥' },
     { path: '/admin/teams', label: 'Manage Teams', icon: '🏆' },
     { path: '/admin/exercises', label: 'Manage Exercises', icon: '📝' },
     { path: '/admin/submissions', label: 'Submissions', icon: '📨' },

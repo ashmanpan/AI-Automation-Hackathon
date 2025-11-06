@@ -1,11 +1,3 @@
 full_name,email,role
-John Doe,john.doe@example.com,participant
-Jane Smith,jane.smith@example.com,participant
-Alice Johnson,alice.j@example.com,judge
-Bob Williams,bob.williams@example.com,participant
-Charlie Brown,charlie@example.com,participant
-Diana Prince,diana.prince@example.com,judge
-Ethan Hunt,ethan.hunt@example.com,participant
-Fiona Green,,participant
-George Miller,george.m@example.com,participant
-Hannah Lee,hannah.lee@example.com,participant
+Test2 Participant,participant@example.com,participant
+Test2 Judge,judge@example.com,judge

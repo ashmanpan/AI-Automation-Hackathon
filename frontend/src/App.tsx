@@ -11,7 +11,7 @@ import ParticipantLayout from './components/layouts/ParticipantLayout'
 
 // Admin pages
 import AdminDashboard from './pages/admin/AdminDashboard'
-import ImportUsers from './pages/admin/ImportUsers'
+import ManageUsers from './pages/admin/ManageUsers'
 import ManageHackathons from './pages/admin/ManageHackathons'
 import CreateHackathon from './pages/admin/CreateHackathon'
 import ManageTeams from './pages/admin/ManageTeams'
@@ -77,11 +77,11 @@ function App() {
           }
         />
         <Route
-          path="/admin/users/import"
+          path="/admin/users"
           element={
             <AdminRoute>
               <AdminLayout>
-                <ImportUsers />
+                <ManageUsers />
               </AdminLayout>
             </AdminRoute>
           }

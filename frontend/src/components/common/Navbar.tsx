@@ -25,7 +25,12 @@ export const Navbar = ({ children, title = 'Hackathon Platform', user, onLogout 
       <div className="container flex items-center justify-between">
         {/* Logo/Title */}
         <div className="flex items-center gap-md">
-          <Link to="/" style={{ textDecoration: 'none' }}>
+          <Link to="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 'var(--spacing-md)' }}>
+            <img
+              src="/cisco-logo-white.png"
+              alt="Cisco Logo"
+              style={{ height: '32px', width: 'auto' }}
+            />
             <h2 className="gradient-text" style={{ margin: 0, fontSize: 'var(--font-size-xl)' }}>
               {title}
             </h2>
