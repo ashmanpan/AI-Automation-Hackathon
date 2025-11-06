@@ -31,9 +31,11 @@ const ManageExercises = () => {
       if (selectedHackathon) params.hackathon_id = selectedHackathon.id
 
       const data = await exerciseService.getAll(params)
-      setExercises(data)
+      setExercises(data || [])
     } catch (error) {
+      console.error('Failed to load exercises:', error)
       toast.error('Failed to load exercises')
+      setExercises([])
     } finally {
       setLoading(false)
     }
