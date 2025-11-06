@@ -18,7 +18,15 @@ class ExerciseService {
   /**
    * Get all exercises
    */
-  async getAll(params?: { category?: string; difficulty?: string; is_active?: boolean; hackathon_id?: number }): Promise<Exercise[]> {
+  async getAll(params?: {
+    category?: string;
+    difficulty?: string;
+    is_active?: boolean;
+    hackathon_id?: number;
+    status?: string;
+    type?: string;
+    team_id?: number;
+  }): Promise<Exercise[]> {
     const response = await api.get<{ exercises: Exercise[] }>('/api/exercises', { params })
     return response.data.exercises || []
   }
