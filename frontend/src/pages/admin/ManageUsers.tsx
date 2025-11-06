@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Card, Button, Alert, FileInput, Modal, Input, Select, LoadingSpinner, Badge, ConfirmModal } from '@/components/common'
 import { useHackathonStore } from '@/store/hackathonStore'
+import { useAuthStore } from '@/store/authStore'
 import userService, { CreateUserRequest } from '@/services/user.service'
 import teamService from '@/services/team.service'
 import { User } from '@/types/user.types'
@@ -22,6 +23,7 @@ interface ImportResult {
 const ManageUsers = () => {
   const navigate = useNavigate()
   const { selectedHackathon } = useHackathonStore()
+  const { user: currentUser } = useAuthStore()
 
   // Import state
   const [file, setFile] = useState<File | null>(null)
@@ -219,12 +221,23 @@ const ManageUsers = () => {
   }
 
   const openDeleteModal = (user: User) => {
+    if (currentUser && user.id === currentUser.id) {
+      toast.error('You cannot delete your own account')
+      return
+    }
     setSelectedUser(user)
     setShowDeleteModal(true)
   }
 
   const handleDelete = async () => {
     if (!selectedUser) return
+
+    // Extra safety check: prevent deleting own account
+    if (currentUser && selectedUser.id === currentUser.id) {
+      toast.error('You cannot delete your own account')
+      setShowDeleteModal(false)
+      return
+    }
 
     try {
       setDeleting(true)
@@ -517,6 +530,8 @@ const ManageUsers = () => {
                           variant="danger"
                           size="sm"
                           onClick={() => openDeleteModal(user)}
+                          disabled={currentUser?.id === user.id}
+                          title={currentUser?.id === user.id ? 'You cannot delete your own account' : 'Delete user'}
                         >
                           Delete
                         </Button>
