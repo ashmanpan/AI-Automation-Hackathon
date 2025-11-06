@@ -225,6 +225,50 @@ export class UsersController {
   }
 
   /**
+   * Reset user password (admin only)
+   */
+  static async resetPassword(req: Request, res: Response) {
+    try {
+      const { id } = req.params;
+      const newPassword = generatePassword();
+
+      await UserModel.updatePassword(parseInt(id), newPassword);
+
+      res.json({
+        message: 'Password reset successfully',
+        username: (await UserModel.findById(parseInt(id)))?.username,
+        newPassword
+      });
+    } catch (error: any) {
+      console.error('Reset password error:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  }
+
+  /**
+   * Export users to CSV (admin only)
+   */
+  static async exportToCSV(req: Request, res: Response) {
+    try {
+      const { role } = req.query;
+      const users = await UserModel.findAll(role as string);
+
+      // Create CSV content
+      let csv = 'id,username,full_name,email,role,created_at\n';
+      users.forEach(user => {
+        csv += `${user.id},"${user.username}","${user.full_name}","${user.email || ''}","${user.role}","${user.created_at}"\n`;
+      });
+
+      res.setHeader('Content-Type', 'text/csv');
+      res.setHeader('Content-Disposition', `attachment; filename="users-${Date.now()}.csv"`);
+      res.send(csv);
+    } catch (error: any) {
+      console.error('Export users error:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  }
+
+  /**
    * Update user
    */
   static async update(req: Request, res: Response) {

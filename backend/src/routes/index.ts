@@ -40,11 +40,13 @@ router.post('/auth/change-password', authenticateToken, AuthController.changePas
 
 // ==================== Users Routes ====================
 router.get('/users/count', authenticateToken, requireAdmin, UsersController.getCount);
+router.get('/users/export', authenticateToken, requireAdmin, UsersController.exportToCSV);
 router.get('/users', authenticateToken, requireAdminOrJudge, UsersController.getAll);
 router.get('/users/:id', authenticateToken, UsersController.getById);
 router.post('/users', authenticateToken, requireAdmin, UsersController.create);
 router.post('/users/bulk', authenticateToken, requireAdmin, upload.single('file'), UsersController.bulkCreate);
 router.post('/users/generate', authenticateToken, requireAdmin, UsersController.generateCredentials);
+router.post('/users/:id/reset-password', authenticateToken, requireAdmin, UsersController.resetPassword);
 router.put('/users/:id', authenticateToken, requireAdmin, UsersController.update);
 router.delete('/users/:id', authenticateToken, requireAdmin, UsersController.delete);
 

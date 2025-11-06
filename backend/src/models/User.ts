@@ -119,6 +119,17 @@ export class UserModel {
   }
 
   /**
+   * Update user password
+   */
+  static async updatePassword(id: number, newPassword: string): Promise<void> {
+    const password_hash = await hashPassword(newPassword);
+    await query(
+      'UPDATE users SET password_hash = $1 WHERE id = $2',
+      [password_hash, id]
+    );
+  }
+
+  /**
    * Update user
    */
   static async update(id: number, updates: Partial<CreateUserInput>): Promise<User | null> {
