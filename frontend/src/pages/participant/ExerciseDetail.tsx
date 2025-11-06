@@ -39,17 +39,23 @@ const ExerciseDetail = () => {
     try {
       setLoading(true)
 
-      // Load exercise details
-      const exerciseData = await exerciseService.getById(parseInt(exerciseId))
-      setExercise(exerciseData)
-
-      // Get team to find team_exercise_id
+      // Get team first
       const myTeam = await teamService.getMyTeam()
 
-      // TODO: This needs to be improved - we need an endpoint to get team_exercise_id
-      // For now, we'll construct it as team_id + exercise_id
-      // This is a temporary workaround
-      setTeamExerciseId(myTeam.id) // This needs proper implementation
+      // Get exercises for this team - response includes team_exercise_id
+      const exercises = await exerciseService.getAll({ team_id: myTeam.id })
+      
+      // Find the specific exercise we're viewing
+      const exerciseData = exercises.find(ex => ex.id === parseInt(exerciseId))
+      
+      if (!exerciseData) {
+        toast.error('Exercise not found or not assigned to your team')
+        navigate('/participant/exercises')
+        return
+      }
+
+      setExercise(exerciseData)
+      setTeamExerciseId(exerciseData.team_exercise_id)
 
     } catch (error: any) {
       console.error('Failed to load exercise:', error)
