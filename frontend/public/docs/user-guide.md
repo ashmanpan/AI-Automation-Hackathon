@@ -7,7 +7,7 @@ Welcome to the Hackathon Platform! This guide will help you navigate the platfor
 The goal of the hackathon is to allow you to gain a better understanding of how AI can be integrated in order to quickly generate workflows for Cisco Crosswork Workflow Manager, improving development agility. The intention of the hackathon is not to provide you with a ready-made solution, but to give you ideas on how AI coding capabilities can be integrated with your development process.
 
 ## Getting Started
-We will carry out all these exercises and hackathon on Cisco's demo cloud environment, dCloud. This environment and laboratories are created for you- every team has a separate environment and will not interact with each other. In this exercise we have deployed Cisco Crosswork Network Controller (CNC), Crosswork Data Gateway (CDG), Crosswork Workflow Manager (CWM), Crosswork Network Service Orchestrator (CNSO) and certain cisco devices.
+We will carry out all these exercises and hackathon on Cisco's demo cloud environment, dCloud. This environment and laboratories are created for you- every team has a separate environment and will not interact with each other. In this exercise we have deployed Cisco Crosswork Network Controller (CNC), Crosswork Data Gateway (CDG), Crosswork Workflow Manager (CWM), Crosswork Network Service Orchestrator (CNSO) and certain cisco devices. We have also installed the Any1CanCode platform, a platform that integrates AI code generation capabilites and enables 
 
 ### Accessing your dCloud Session
 1. Navigate to the following page: https://expo.ciscodcloud.com/2uqjv4ftmdxsk2pd5rrqu1f6q (Chrome recommended)
@@ -22,6 +22,7 @@ We will carry out all these exercises and hackathon on Cisco's demo cloud enviro
 2. A terminal window will launch, and then a chrome window will open.
 3. NOTICE: If the page doesn't load, just reload after waiting a couple seconds.
 4. Select the 'hackathon' project and begin chatting with the agent.
+5. View the available wizards by clicking on the lightning button in the bottom right. Take note of the Workflow Generation wizard.
 
 ### Dashboard Overview
 Your dashboard shows:
