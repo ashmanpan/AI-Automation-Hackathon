@@ -35,6 +35,13 @@ export class ExercisesController {
       if (team_id) {
         const exercises = await ExerciseModel.findByTeam(parseInt(team_id as string));
         console.log('[DEBUG] Found exercises for team:', exercises.length);
+
+        // Hide rubric from participants (may contain passwords/flags)
+        if (req.user?.role === 'participant') {
+          const exercisesWithoutRubric = exercises.map(({ rubric, ...exercise }) => exercise);
+          return res.json({ exercises: exercisesWithoutRubric });
+        }
+
         return res.json({ exercises });
       }
 
@@ -45,6 +52,13 @@ export class ExercisesController {
         );
         console.log('[DEBUG] Found exercises for hackathon', hackathon_id, ':', exercises.length, 'exercises');
         console.log('[DEBUG] Exercises:', JSON.stringify(exercises, null, 2));
+
+        // Hide rubric from participants (may contain passwords/flags)
+        if (req.user?.role === 'participant') {
+          const exercisesWithoutRubric = exercises.map(({ rubric, ...exercise }) => exercise);
+          return res.json({ exercises: exercisesWithoutRubric });
+        }
+
         return res.json({ exercises });
       }
 
@@ -62,6 +76,12 @@ export class ExercisesController {
 
       if (!exercise) {
         return res.status(404).json({ error: 'Exercise not found' });
+      }
+
+      // Hide rubric from participants (may contain passwords/flags)
+      if (req.user?.role === 'participant') {
+        const { rubric, ...exerciseWithoutRubric } = exercise;
+        return res.json({ exercise: exerciseWithoutRubric });
       }
 
       res.json({ exercise });

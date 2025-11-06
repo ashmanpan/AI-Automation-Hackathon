@@ -6,6 +6,8 @@ import submissionService from '@/services/submission.service'
 import teamService from '@/services/team.service'
 import { Exercise } from '@/types/exercise.types'
 import toast from 'react-hot-toast'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 
 const ExerciseDetail = () => {
   const { exerciseId } = useParams<{ exerciseId: string }>()
@@ -175,16 +177,18 @@ const ExerciseDetail = () => {
           <Card style={{ marginBottom: 'var(--spacing-lg)' }}>
             <h2 style={{ marginBottom: 'var(--spacing-md)' }}>Description</h2>
             <div
+              className="markdown-content"
               style={{
                 padding: 'var(--spacing-md)',
                 background: 'var(--color-bg-secondary)',
                 borderRadius: 'var(--radius-md)',
                 color: 'var(--color-text-secondary)',
                 lineHeight: 1.6,
-                whiteSpace: 'pre-wrap',
               }}
             >
-              {exercise.description}
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                {exercise.description}
+              </ReactMarkdown>
             </div>
           </Card>
 
@@ -193,16 +197,18 @@ const ExerciseDetail = () => {
             <Card style={{ marginBottom: 'var(--spacing-lg)' }}>
               <h2 style={{ marginBottom: 'var(--spacing-md)' }}>Instructions</h2>
               <div
+                className="markdown-content"
                 style={{
                   padding: 'var(--spacing-md)',
                   background: 'var(--color-bg-secondary)',
                   borderRadius: 'var(--radius-md)',
                   color: 'var(--color-text-secondary)',
                   lineHeight: 1.8,
-                  whiteSpace: 'pre-wrap',
                 }}
               >
-                {exercise.instructions}
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                  {exercise.instructions}
+                </ReactMarkdown>
               </div>
             </Card>
           )}
@@ -481,28 +487,6 @@ const ExerciseDetail = () => {
                 </Badge>
               </div>
             </div>
-
-            {exercise.rubric && (
-              <>
-                <div className="divider" style={{ margin: 'var(--spacing-lg) 0' }}></div>
-                <div>
-                  <h4 style={{ fontSize: 'var(--font-size-base)', marginBottom: 'var(--spacing-md)', fontWeight: 600 }}>
-                    Grading Criteria
-                  </h4>
-                  <div style={{
-                    fontSize: 'var(--font-size-sm)',
-                    color: 'var(--color-text-secondary)',
-                    whiteSpace: 'pre-wrap',
-                    lineHeight: 1.8,
-                    padding: 'var(--spacing-md)',
-                    background: 'var(--color-bg-secondary)',
-                    borderRadius: 'var(--radius-sm)',
-                  }}>
-                    {exercise.rubric}
-                  </div>
-                </div>
-              </>
-            )}
           </Card>
         </div>
       </div>
