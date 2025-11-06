@@ -30,11 +30,16 @@ const ManageExercises = () => {
       if (filterType) params.type = filterType
       if (selectedHackathon) params.hackathon_id = selectedHackathon.id
 
+      console.log('Loading exercises with params:', params)
+      console.log('Selected hackathon:', selectedHackathon)
+
       const data = await exerciseService.getAll(params)
+      console.log('Exercises loaded:', data)
       setExercises(data || [])
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to load exercises:', error)
-      toast.error('Failed to load exercises')
+      console.error('Error response:', error.response?.data)
+      toast.error(error.response?.data?.error || 'Failed to load exercises')
       setExercises([])
     } finally {
       setLoading(false)
