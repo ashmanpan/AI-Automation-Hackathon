@@ -68,6 +68,7 @@ export class AIGradingController {
         exerciseTitle: exercise.title,
         exerciseDescription: exercise.description || '',
         exerciseType: exercise.type,
+        rubric: exercise.rubric || undefined,
       };
 
       let gradingResult;
@@ -156,6 +157,7 @@ export class AIGradingController {
         exerciseTitle: exercise.title,
         exerciseDescription: exercise.description || '',
         exerciseType: exercise.type,
+        rubric: exercise.rubric || undefined,
       };
 
       const gradedCount = {
