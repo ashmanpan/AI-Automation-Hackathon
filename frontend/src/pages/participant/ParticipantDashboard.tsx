@@ -41,7 +41,7 @@ const ParticipantDashboard = () => {
         return
       }
 
-      // Get active exercises and submissions in parallel
+      // Get exercises and team submissions
       let exercisesData: Exercise[] = []
       let submissions: Submission[] = []
 
@@ -58,7 +58,13 @@ const ParticipantDashboard = () => {
       }
 
       try {
-        submissions = await submissionService.getTeamSubmissions(myTeam.id)
+        // Get team members to filter submissions
+        const members = await teamService.getMembers(myTeam.id)
+        const memberIds = members.map(m => m.id)
+
+        // Get submissions and filter to only team members
+        const allSubmissions = await submissionService.getTeamSubmissions(myTeam.id)
+        submissions = allSubmissions.filter(s => memberIds.includes(s.submitted_by))
         setRecentSubmissions(submissions.slice(0, 5))
       } catch (error) {
         console.log('Failed to load submissions')

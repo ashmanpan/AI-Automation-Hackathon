@@ -20,10 +20,17 @@ const MySubmissions = () => {
       // Get user's team using the dedicated endpoint
       const myTeam = await teamService.getMyTeam()
 
+      // Get team members to filter submissions
+      const members = await teamService.getMembers(myTeam.id)
+      const memberIds = members.map(m => m.id)
+
       // Get team submissions
       const data = await submissionService.getTeamSubmissions(myTeam.id)
 
-      setSubmissions(data)
+      // Filter to only show submissions from team members
+      const filteredData = data.filter(s => memberIds.includes(s.submitted_by))
+
+      setSubmissions(filteredData)
     } catch (error) {
       console.error('Failed to load submissions:', error)
       toast.error('No team assigned or failed to load submissions')
