@@ -20,7 +20,7 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
     { path: '/admin/teams', label: 'Manage Teams', icon: '🏆' },
     { path: '/admin/exercises', label: 'Manage Exercises', icon: '📝' },
     { path: '/admin/submissions', label: 'Submissions', icon: '📨' },
-    { path: '/admin/leaderboard', label: 'Leaderboard', icon: '🏅' },
+    // { path: '/admin/leaderboard', label: 'Leaderboard', icon: '🏅' },
   ]
 
   const handleLogout = () => {

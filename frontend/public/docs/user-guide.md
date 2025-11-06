@@ -66,13 +66,6 @@ Your dashboard shows:
 - Once graded, you'll see your score and feedback
 - Judges may provide comments on strengths and areas for improvement
 
-## Leaderboard
-
-### Checking Rankings
-- View the public leaderboard to see how your team ranks
-- Rankings are updated in real-time as submissions are graded
-- Scores are based on total points earned across all exercises
-
 ## Tips for Success
 
 1. **Communicate with Your Team**: Coordinate on who submits what

@@ -16,7 +16,7 @@ const JudgeLayout = ({ children }: JudgeLayoutProps) => {
     { path: '/judge/dashboard', label: 'Dashboard', icon: '📊' },
     { path: '/judge/queue', label: 'Grading Queue', icon: '📝' },
     { path: '/judge/history', label: 'Grading History', icon: '📜' },
-    { path: '/leaderboard', label: 'Leaderboard', icon: '🏅' },
+    // { path: '/leaderboard', label: 'Leaderboard', icon: '🏅' },
   ]
 
   const handleLogout = () => {
