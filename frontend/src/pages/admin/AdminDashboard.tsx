@@ -193,13 +193,13 @@ const AdminDashboard = () => {
                     <td>{submission.team_name || 'Unknown'}</td>
                     <td>{submission.exercise_title || `Exercise #${submission.exercise_id}`}</td>
                     <td>
-                      <span className={`badge ${submission.is_correct ? 'badge-success' : 'badge-error'}`}>
-                        {submission.is_correct ? '✓ Correct' : '✗ Incorrect'}
+                      <span className={`badge ${submission.grade ? 'badge-success' : 'badge-warning'}`}>
+                        {submission.grade ? 'Graded' : 'Pending'}
                       </span>
                     </td>
                     <td>
-                      <strong className={submission.points_awarded > 0 ? 'gradient-text' : ''}>
-                        {submission.points_awarded}
+                      <strong className={(submission.grade?.score || 0) > 0 ? 'gradient-text' : ''}>
+                        {submission.grade?.score || 0}
                       </strong>
                     </td>
                   </tr>

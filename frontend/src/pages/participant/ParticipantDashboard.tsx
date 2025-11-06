@@ -243,8 +243,8 @@ const ParticipantDashboard = () => {
                     <span style={{ fontSize: 'var(--font-size-sm)', fontWeight: 600 }}>
                       {submission.exercise_title || `Exercise #${submission.exercise_id}`}
                     </span>
-                    <Badge variant={submission.is_correct ? 'success' : 'error'} style={{ fontSize: 'var(--font-size-xs)' }}>
-                      {submission.is_correct ? '✓' : '✗'}
+                    <Badge variant={submission.grade ? 'success' : 'warning'} style={{ fontSize: 'var(--font-size-xs)' }}>
+                      {submission.grade ? '✓' : '⏳'}
                     </Badge>
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 'var(--font-size-xs)', color: 'var(--color-text-tertiary)' }}>
@@ -254,8 +254,8 @@ const ParticipantDashboard = () => {
                         day: 'numeric',
                       })}
                     </span>
-                    <span className={submission.points_awarded > 0 ? 'gradient-text' : ''}>
-                      +{submission.points_awarded} pts
+                    <span className={(submission.grade?.score || 0) > 0 ? 'gradient-text' : ''}>
+                      {submission.grade?.score || 0} pts
                     </span>
                   </div>
                 </div>

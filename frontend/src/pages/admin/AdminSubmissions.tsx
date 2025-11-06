@@ -31,7 +31,7 @@ const AdminSubmissions = () => {
 
       let filteredData = data
       if (filter === 'graded') {
-        filteredData = data.filter(s => s.status === 'graded')
+        filteredData = data.filter(s => s.grade !== undefined)
       }
 
       setSubmissions(filteredData)
@@ -43,16 +43,6 @@ const AdminSubmissions = () => {
     }
   }
 
-  const getStatusBadgeVariant = (status?: string) => {
-    switch (status) {
-      case 'graded':
-        return 'success'
-      case 'pending':
-        return 'warning'
-      default:
-        return 'secondary'
-    }
-  }
 
   const getSubmissionTypeBadge = (type?: string) => {
     switch (type) {
@@ -167,18 +157,18 @@ const AdminSubmissions = () => {
                         <strong>{submission.team_name}</strong>
                       </td>
                       <td>{submission.exercise_title}</td>
-                      <td>{submission.submitted_by_name}</td>
+                      <td>{submission.submitter_name}</td>
                       <td>
                         <Badge variant={typeBadge.variant}>{typeBadge.label}</Badge>
                       </td>
                       <td>
-                        <Badge variant={getStatusBadgeVariant(submission.status)}>
-                          {submission.status}
+                        <Badge variant={submission.grade ? 'success' : 'warning'}>
+                          {submission.grade ? 'Graded' : 'Pending'}
                         </Badge>
                       </td>
                       <td>
-                        {submission.status === 'graded' && submission.score !== null
-                          ? `${submission.score}/${submission.max_score}`
+                        {submission.grade
+                          ? `${submission.grade.score}`
                           : '-'}
                       </td>
                       <td>
@@ -196,7 +186,7 @@ const AdminSubmissions = () => {
                             size="sm"
                             onClick={() => navigate(`/judge/grade/${submission.id}`)}
                           >
-                            {submission.status === 'graded' ? 'View' : 'Grade'}
+                            {submission.grade ? 'View' : 'Grade'}
                           </Button>
                         </div>
                       </td>

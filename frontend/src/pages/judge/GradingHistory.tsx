@@ -2,11 +2,9 @@ import { useState, useEffect } from 'react'
 import { Card, LoadingSpinner, Badge, Select } from '@/components/common'
 import submissionService from '@/services/submission.service'
 import { Submission } from '@/types/submission.types'
-import { useAuthStore } from '@/store/authStore'
 import toast from 'react-hot-toast'
 
 const GradingHistory = () => {
-  const { user } = useAuthStore()
   const [submissions, setSubmissions] = useState<Submission[]>([])
   const [loading, setLoading] = useState(true)
   const [filterCorrect, setFilterCorrect] = useState<string>('')
@@ -18,13 +16,17 @@ const GradingHistory = () => {
   const loadHistory = async () => {
     try {
       setLoading(true)
-      const params: any = {}
-      if (filterCorrect !== '') params.is_correct = filterCorrect === 'true'
+      const data = await submissionService.getAll({})
 
-      const data = await submissionService.getAll(params)
-
-      // Filter only submissions graded by current judge
-      const gradedByMe = data.filter((sub) => sub.graded_by === user?.id && sub.graded_at)
+      // Filter only graded submissions
+      let gradedByMe = data.filter((sub) => sub.grade !== undefined)
+      
+      // Filter by correct/incorrect if selected
+      if (filterCorrect === 'true') {
+        gradedByMe = gradedByMe.filter(s => (s.grade?.score || 0) > 0)
+      } else if (filterCorrect === 'false') {
+        gradedByMe = gradedByMe.filter(s => (s.grade?.score || 0) === 0)
+      }
       setSubmissions(gradedByMe)
     } catch (error) {
       toast.error('Failed to load grading history')
@@ -64,15 +66,15 @@ const GradingHistory = () => {
             Accepted
           </div>
           <div style={{ fontSize: 'var(--font-size-2xl)', fontWeight: 'bold', color: 'var(--color-success)' }}>
-            {submissions.filter((s) => s.is_correct).length}
+            {submissions.filter((s) => (s.grade?.score || 0) > 0).length}
           </div>
         </Card>
         <Card compact>
           <div style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-tertiary)', marginBottom: 'var(--spacing-xs)' }}>
-            Rejected
+            Zero Score
           </div>
           <div style={{ fontSize: 'var(--font-size-2xl)', fontWeight: 'bold', color: 'var(--color-error)' }}>
-            {submissions.filter((s) => !s.is_correct).length}
+            {submissions.filter((s) => (s.grade?.score || 0) === 0).length}
           </div>
         </Card>
       </div>
@@ -113,7 +115,7 @@ const GradingHistory = () => {
                   <th>Participant</th>
                   <th>Result</th>
                   <th>Points</th>
-                  <th>Submitted Flag</th>
+                  <th>Content</th>
                 </tr>
               </thead>
               <tbody>
@@ -121,16 +123,16 @@ const GradingHistory = () => {
                   <tr key={submission.id}>
                     <td>
                       <div style={{ whiteSpace: 'nowrap' }}>
-                        {submission.graded_at
-                          ? new Date(submission.graded_at).toLocaleDateString('en-US', {
+                        {submission.grade?.graded_at
+                          ? new Date(submission.grade.graded_at).toLocaleDateString('en-US', {
                               month: 'short',
                               day: 'numeric',
                             })
                           : '-'}
                       </div>
                       <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-tertiary)' }}>
-                        {submission.graded_at
-                          ? new Date(submission.graded_at).toLocaleTimeString('en-US', {
+                        {submission.grade?.graded_at
+                          ? new Date(submission.grade.graded_at).toLocaleTimeString('en-US', {
                               hour: '2-digit',
                               minute: '2-digit',
                             })
@@ -141,15 +143,15 @@ const GradingHistory = () => {
                       <strong>{submission.team_name || 'Unknown'}</strong>
                     </td>
                     <td>{submission.exercise_title || `Exercise #${submission.exercise_id}`}</td>
-                    <td>{submission.username || 'Unknown'}</td>
+                    <td>{submission.submitter_name || 'Unknown'}</td>
                     <td>
-                      <Badge variant={submission.is_correct ? 'success' : 'error'}>
-                        {submission.is_correct ? '✓ Accepted' : '✗ Rejected'}
+                      <Badge variant={(submission.grade?.score || 0) > 0 ? 'success' : 'error'}>
+                        {(submission.grade?.score || 0) > 0 ? 'Scored' : 'Zero'}
                       </Badge>
                     </td>
                     <td>
-                      <strong className={submission.points_awarded > 0 ? 'gradient-text' : ''}>
-                        {submission.points_awarded}
+                      <strong className={(submission.grade?.score || 0) > 0 ? 'gradient-text' : ''}>
+                        {submission.grade?.score || 0}
                       </strong>
                     </td>
                     <td>
@@ -161,9 +163,9 @@ const GradingHistory = () => {
                           fontSize: 'var(--font-size-sm)',
                         }}
                       >
-                        {submission.submitted_flag.length > 25
-                          ? `${submission.submitted_flag.substring(0, 25)}...`
-                          : submission.submitted_flag}
+                        {submission.content && submission.content.length > 25
+                          ? `${submission.content.substring(0, 25)}...`
+                          : (submission.content || 'File submission')}
                       </code>
                     </td>
                   </tr>

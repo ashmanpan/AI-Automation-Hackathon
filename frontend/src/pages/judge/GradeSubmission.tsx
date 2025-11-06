@@ -38,7 +38,7 @@ const GradeSubmission = () => {
       setSubmission(submissionData)
 
       // Load exercise details
-      const exerciseData = await exerciseService.getById(submissionData.exercise_id)
+      const exerciseData = await exerciseService.getById(submissionData.exercise_id!)
       setExercise(exerciseData)
 
       // Pre-fill grading data
@@ -192,7 +192,7 @@ const GradeSubmission = () => {
                     wordBreak: 'break-all',
                   }}
                 >
-                  {submission.submitted_flag}
+                  {submission.content || 'N/A'}
                 </div>
               </div>
 
@@ -203,7 +203,7 @@ const GradeSubmission = () => {
                 </div>
                 <div>
                   <label style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-tertiary)' }}>Participant</label>
-                  <div style={{ fontWeight: 600, marginTop: 'var(--spacing-xs)' }}>{submission.username}</div>
+                  <div style={{ fontWeight: 600, marginTop: 'var(--spacing-xs)' }}>{submission.submitter_name}</div>
                 </div>
               </div>
 

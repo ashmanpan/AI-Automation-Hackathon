@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Card, LoadingSpinner, Badge, Select } from '@/components/common'
+import { Card, LoadingSpinner, Badge } from '@/components/common'
 import submissionService from '@/services/submission.service'
 import teamService from '@/services/team.service'
 import { Submission } from '@/types/submission.types'
