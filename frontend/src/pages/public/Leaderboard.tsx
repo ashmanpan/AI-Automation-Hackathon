@@ -1,12 +1,16 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Card, Button, LoadingSpinner, Badge } from '@/components/common'
 import leaderboardService from '@/services/leaderboard.service'
 import { Leaderboard as LeaderboardType } from '@/types/leaderboard.types'
 import { useWebSocketEvent } from '@/hooks/useWebSocket'
 import websocketService from '@/services/websocket.service'
+import { useAuthStore } from '@/store/authStore'
 import toast from 'react-hot-toast'
 
 const Leaderboard = () => {
+  const navigate = useNavigate()
+  const { user } = useAuthStore()
   const [leaderboard, setLeaderboard] = useState<LeaderboardType | null>(null)
   const [loading, setLoading] = useState(true)
   const [liveUpdates, setLiveUpdates] = useState(true)
@@ -83,9 +87,26 @@ const Leaderboard = () => {
 
       {/* Header */}
       <div style={{ padding: 'var(--spacing-xl)', maxWidth: '1400px', margin: '0 auto' }}>
+        {/* Back Button */}
+        {user && (
+          <div style={{ marginBottom: 'var(--spacing-lg)' }}>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                if (user.role === 'admin') navigate('/admin/dashboard')
+                else if (user.role === 'judge') navigate('/judge/dashboard')
+                else navigate('/participant/dashboard')
+              }}
+            >
+              ← Back to Dashboard
+            </Button>
+          </div>
+        )}
+
         <div style={{ textAlign: 'center', marginBottom: 'var(--spacing-xl)' }}>
           <h1 className="gradient-text" style={{ fontSize: 'var(--font-size-3xl)', marginBottom: 'var(--spacing-sm)' }}>
-            🏆 Leaderboard
+            Leaderboard
           </h1>
           <p style={{ color: 'var(--color-text-tertiary)', fontSize: 'var(--font-size-lg)' }}>
             Live standings • {leaderboard?.total_teams || 0} team{leaderboard?.total_teams !== 1 ? 's' : ''} competing
