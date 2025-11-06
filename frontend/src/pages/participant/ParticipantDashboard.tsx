@@ -1,11 +1,9 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Card, StatsCard, Button, LoadingSpinner, Badge } from '@/components/common'
-import leaderboardService from '@/services/leaderboard.service'
 import exerciseService from '@/services/exercise.service'
 import submissionService from '@/services/submission.service'
 import teamService from '@/services/team.service'
-import { ParticipantStats } from '@/types/leaderboard.types'
 import { Exercise } from '@/types/exercise.types'
 import { Submission } from '@/types/submission.types'
 import { Team } from '@/types/team.types'
@@ -13,7 +11,12 @@ import toast from 'react-hot-toast'
 
 const ParticipantDashboard = () => {
   const navigate = useNavigate()
-  const [stats, setStats] = useState<ParticipantStats | null>(null)
+  const [stats, setStats] = useState<{ 
+    total_score: number
+    solved_exercises: number
+    total_exercises: number
+    pending_submissions: number
+  } | null>(null)
   const [team, setTeam] = useState<Team | null>(null)
   const [exercises, setExercises] = useState<Exercise[]>([])
   const [recentSubmissions, setRecentSubmissions] = useState<Submission[]>([])
@@ -38,18 +41,13 @@ const ParticipantDashboard = () => {
         return
       }
 
-      // Get participant stats (optional)
-      try {
-        const statsData = await leaderboardService.getParticipantStats()
-        setStats(statsData)
-      } catch (error) {
-        console.log('Failed to load stats')
-      }
+      // Get active exercises and submissions in parallel
+      let exercisesData: Exercise[] = []
+      let submissions: Submission[] = []
 
-      // Get active exercises using team's hackathon_id
       if (myTeam.hackathon_id) {
         try {
-          const exercisesData = await exerciseService.getAll({
+          exercisesData = await exerciseService.getAll({
             hackathon_id: myTeam.hackathon_id,
             is_active: true
           })
@@ -59,13 +57,24 @@ const ParticipantDashboard = () => {
         }
       }
 
-      // Get team submissions (optional)
       try {
-        const submissions = await submissionService.getTeamSubmissions(myTeam.id)
+        submissions = await submissionService.getTeamSubmissions(myTeam.id)
         setRecentSubmissions(submissions.slice(0, 5))
       } catch (error) {
         console.log('Failed to load submissions')
       }
+
+      // Calculate stats from actual data
+      const uniqueExercisesSubmitted = new Set(submissions.map(s => s.exercise_id)).size
+      const totalScore = submissions.reduce((sum, s) => sum + (s.grade?.score || 0), 0)
+      const pendingCount = submissions.filter(s => !s.grade).length
+
+      setStats({ 
+        total_score: totalScore,
+        solved_exercises: uniqueExercisesSubmitted,
+        total_exercises: exercisesData.length,
+        pending_submissions: pendingCount
+      })
     } catch (error: any) {
       console.error('Failed to load dashboard data:', error)
       toast.error('Failed to load dashboard data')
@@ -97,11 +106,6 @@ const ParticipantDashboard = () => {
         gap: '1.5rem',
         marginBottom: 'var(--spacing-xl)'
       }}>
-        <StatsCard
-          title="Team Rank"
-          value={stats?.team_rank ? `#${stats.team_rank}` : '-'}
-          variant="warning"
-        />
         <StatsCard
           title="Total Score"
           value={stats?.total_score || 0}
@@ -136,13 +140,6 @@ const ParticipantDashboard = () => {
             onClick={() => navigate('/participant/submissions')}
           >
             My Submissions
-          </Button>
-          <Button
-            variant="outline"
-            block
-            onClick={() => navigate('/leaderboard')}
-          >
-            View Leaderboard
           </Button>
         </div>
       </Card>
