@@ -5,16 +5,27 @@ import { TeamModel } from '../models/Team';
 export class ExercisesController {
   static async getAll(req: Request, res: Response) {
     try {
-      const { hackathon_id, team_id } = req.query;
+      const { hackathon_id, team_id, is_active, status } = req.query;
+
+      // Map is_active to status
+      let statusFilter: string | undefined;
+      if (is_active === 'true') {
+        statusFilter = 'active';
+      } else if (status) {
+        statusFilter = status as string;
+      }
 
       if (team_id) {
         const exercises = await ExerciseModel.findByTeam(parseInt(team_id as string));
-        return res.json(exercises);
+        return res.json({ exercises });
       }
 
       if (hackathon_id) {
-        const exercises = await ExerciseModel.findByHackathon(parseInt(hackathon_id as string));
-        return res.json(exercises);
+        const exercises = await ExerciseModel.findByHackathon(
+          parseInt(hackathon_id as string),
+          statusFilter
+        );
+        return res.json({ exercises });
       }
 
       res.status(400).json({ error: 'hackathon_id or team_id is required' });
@@ -33,7 +44,7 @@ export class ExercisesController {
         return res.status(404).json({ error: 'Exercise not found' });
       }
 
-      res.json(exercise);
+      res.json({ exercise });
     } catch (error: any) {
       console.error('Get exercise error:', error);
       res.status(500).json({ error: 'Internal server error' });
@@ -42,7 +53,7 @@ export class ExercisesController {
 
   static async create(req: Request, res: Response) {
     try {
-      const { hackathon_id, title, description, type, max_score, time_limit_minutes, start_time, assign_to } = req.body;
+      const { hackathon_id, title, description, instructions, rubric, type, max_score, time_limit_minutes, start_time, assign_to } = req.body;
 
       if (!hackathon_id || !title || !type || max_score === undefined) {
         return res.status(400).json({ error: 'Missing required fields' });
@@ -52,6 +63,8 @@ export class ExercisesController {
         hackathon_id,
         title,
         description,
+        instructions,
+        rubric,
         type,
         max_score,
         time_limit_minutes,
@@ -67,7 +80,7 @@ export class ExercisesController {
         }
       }
 
-      res.status(201).json(exercise);
+      res.status(201).json({ exercise });
     } catch (error: any) {
       console.error('Create exercise error:', error);
       res.status(500).json({ error: 'Internal server error' });
@@ -89,7 +102,7 @@ export class ExercisesController {
         return res.status(404).json({ error: 'Exercise not found' });
       }
 
-      res.json(exercise);
+      res.json({ exercise });
     } catch (error: any) {
       console.error('Update exercise error:', error);
       res.status(500).json({ error: 'Internal server error' });
@@ -111,7 +124,7 @@ export class ExercisesController {
         return res.status(404).json({ error: 'Exercise not found' });
       }
 
-      res.json(exercise);
+      res.json({ exercise });
     } catch (error: any) {
       console.error('Update exercise status error:', error);
       res.status(500).json({ error: 'Internal server error' });

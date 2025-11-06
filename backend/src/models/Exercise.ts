@@ -68,11 +68,18 @@ export class ExerciseModel {
   /**
    * Get all exercises for a hackathon
    */
-  static async findByHackathon(hackathonId: number): Promise<Exercise[]> {
-    const result = await query(
-      'SELECT * FROM exercises WHERE hackathon_id = $1 ORDER BY start_time, created_at',
-      [hackathonId]
-    );
+  static async findByHackathon(hackathonId: number, status?: string): Promise<Exercise[]> {
+    let sql = 'SELECT * FROM exercises WHERE hackathon_id = $1';
+    const params: any[] = [hackathonId];
+
+    if (status) {
+      sql += ' AND status = $2';
+      params.push(status);
+    }
+
+    sql += ' ORDER BY start_time, created_at';
+
+    const result = await query(sql, params);
     return result.rows;
   }
 

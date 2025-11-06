@@ -1,29 +1,34 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Card, Button, Select, LoadingSpinner, Badge, ConfirmModal } from '@/components/common'
+import { useHackathonStore } from '@/store/hackathonStore'
 import exerciseService from '@/services/exercise.service'
 import { Exercise } from '@/types/exercise.types'
 import toast from 'react-hot-toast'
 
 const ManageExercises = () => {
   const navigate = useNavigate()
+  const { selectedHackathon } = useHackathonStore()
   const [exercises, setExercises] = useState<Exercise[]>([])
   const [loading, setLoading] = useState(true)
-  const [filterDifficulty, setFilterDifficulty] = useState<string>('')
-  const [filterCategory, setFilterCategory] = useState<string>('')
+  const [filterStatus, setFilterStatus] = useState<string>('')
+  const [filterType, setFilterType] = useState<string>('')
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [selectedExercise, setSelectedExercise] = useState<Exercise | null>(null)
 
   useEffect(() => {
-    loadExercises()
-  }, [filterDifficulty, filterCategory])
+    if (selectedHackathon) {
+      loadExercises()
+    }
+  }, [filterStatus, filterType, selectedHackathon])
 
   const loadExercises = async () => {
     try {
       setLoading(true)
       const params: any = {}
-      if (filterDifficulty) params.difficulty = filterDifficulty
-      if (filterCategory) params.category = filterCategory
+      if (filterStatus) params.status = filterStatus
+      if (filterType) params.type = filterType
+      if (selectedHackathon) params.hackathon_id = selectedHackathon.id
 
       const data = await exerciseService.getAll(params)
       setExercises(data)
@@ -36,11 +41,12 @@ const ManageExercises = () => {
 
   const handleToggleActive = async (exercise: Exercise) => {
     try {
-      await exerciseService.toggleActive(exercise.id)
-      toast.success(`Exercise ${exercise.is_active ? 'deactivated' : 'activated'}`)
+      const newStatus = exercise.status === 'active' ? 'draft' : 'active'
+      await exerciseService.updateStatus(exercise.id, newStatus)
+      toast.success(`Exercise ${newStatus === 'active' ? 'activated' : 'deactivated'}`)
       loadExercises()
     } catch (error) {
-      toast.error('Failed to toggle exercise status')
+      toast.error('Failed to update exercise status')
     }
   }
 
@@ -63,13 +69,13 @@ const ManageExercises = () => {
     setShowDeleteModal(true)
   }
 
-  const getDifficultyColor = (difficulty: string) => {
-    switch (difficulty) {
-      case 'easy':
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'active':
         return 'success'
-      case 'medium':
-        return 'warning'
-      case 'hard':
+      case 'completed':
+        return 'info'
+      case 'cancelled':
         return 'error'
       default:
         return 'secondary'
@@ -101,28 +107,28 @@ const ManageExercises = () => {
       <Card style={{ marginBottom: 'var(--spacing-lg)' }}>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 'var(--spacing-md)' }}>
           <Select
-            label="Filter by Difficulty"
-            value={filterDifficulty}
-            onChange={(e) => setFilterDifficulty(e.target.value)}
+            label="Filter by Status"
+            value={filterStatus}
+            onChange={(e) => setFilterStatus(e.target.value)}
           >
-            <option value="">All Difficulties</option>
-            <option value="easy">Easy</option>
-            <option value="medium">Medium</option>
-            <option value="hard">Hard</option>
+            <option value="">All Statuses</option>
+            <option value="draft">Draft</option>
+            <option value="active">Active</option>
+            <option value="completed">Completed</option>
+            <option value="cancelled">Cancelled</option>
           </Select>
 
           <Select
-            label="Filter by Category"
-            value={filterCategory}
-            onChange={(e) => setFilterCategory(e.target.value)}
+            label="Filter by Type"
+            value={filterType}
+            onChange={(e) => setFilterType(e.target.value)}
           >
-            <option value="">All Categories</option>
-            <option value="web">Web</option>
-            <option value="crypto">Crypto</option>
-            <option value="forensics">Forensics</option>
-            <option value="reversing">Reversing</option>
-            <option value="pwn">Pwn</option>
-            <option value="misc">Misc</option>
+            <option value="">All Types</option>
+            <option value="coding">Coding</option>
+            <option value="study">Study</option>
+            <option value="presentation">Presentation</option>
+            <option value="deployment">Deployment</option>
+            <option value="other">Other</option>
           </Select>
         </div>
       </Card>
@@ -134,7 +140,7 @@ const ManageExercises = () => {
             <div style={{ fontSize: '48px', marginBottom: 'var(--spacing-md)' }}>📝</div>
             <h3 style={{ marginBottom: 'var(--spacing-sm)' }}>No exercises found</h3>
             <p style={{ color: 'var(--color-text-tertiary)', marginBottom: 'var(--spacing-lg)' }}>
-              {filterDifficulty || filterCategory ? 'Try adjusting your filters' : 'Create your first exercise to get started'}
+              {filterStatus || filterType ? 'Try adjusting your filters' : 'Create your first exercise to get started'}
             </p>
             <Button variant="primary" onClick={() => navigate('/admin/exercises/create')}>
               Create Exercise
@@ -148,10 +154,10 @@ const ManageExercises = () => {
               <thead>
                 <tr>
                   <th>Title</th>
-                  <th>Category</th>
-                  <th>Difficulty</th>
-                  <th>Points</th>
+                  <th>Type</th>
+                  <th>Max Score</th>
                   <th>Status</th>
+                  <th>Time Limit</th>
                   <th>Submissions</th>
                   <th>Actions</th>
                 </tr>
@@ -163,20 +169,18 @@ const ManageExercises = () => {
                       <strong>{exercise.title}</strong>
                     </td>
                     <td>
-                      <Badge variant="info">{exercise.category}</Badge>
+                      <Badge variant="info">{exercise.type}</Badge>
                     </td>
                     <td>
-                      <Badge variant={getDifficultyColor(exercise.difficulty)}>
-                        {exercise.difficulty}
+                      <strong className="gradient-text">{exercise.max_score}</strong>
+                    </td>
+                    <td>
+                      <Badge variant={getStatusColor(exercise.status)}>
+                        {exercise.status.charAt(0).toUpperCase() + exercise.status.slice(1)}
                       </Badge>
                     </td>
                     <td>
-                      <strong className="gradient-text">{exercise.points}</strong>
-                    </td>
-                    <td>
-                      <Badge variant={exercise.is_active ? 'success' : 'secondary'}>
-                        {exercise.is_active ? '✓ Active' : '✗ Inactive'}
-                      </Badge>
+                      {exercise.time_limit_minutes ? `${exercise.time_limit_minutes}m` : '-'}
                     </td>
                     <td>
                       {exercise.submission_count || 0}{' '}
@@ -194,11 +198,11 @@ const ManageExercises = () => {
                           Edit
                         </Button>
                         <Button
-                          variant={exercise.is_active ? 'warning' : 'success'}
+                          variant={exercise.status === 'active' ? 'warning' : 'success'}
                           size="sm"
                           onClick={() => handleToggleActive(exercise)}
                         >
-                          {exercise.is_active ? 'Deactivate' : 'Activate'}
+                          {exercise.status === 'active' ? 'Deactivate' : 'Activate'}
                         </Button>
                         <Button
                           variant="danger"

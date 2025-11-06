@@ -4,15 +4,18 @@
 
 export interface Exercise {
   id: number
+  hackathon_id: number
   title: string
-  description: string
-  category: string
-  difficulty: 'easy' | 'medium' | 'hard'
-  points: number
-  time_limit?: number
-  is_active: boolean
+  description: string | null
+  instructions?: string | null
+  rubric?: string | null
+  type: 'coding' | 'study' | 'presentation' | 'deployment' | 'other'
+  max_score: number
+  time_limit_minutes: number | null
+  start_time: string | null
+  end_time: string | null
+  status: 'draft' | 'active' | 'completed' | 'cancelled'
   created_at: string
-  updated_at: string
   flags?: Flag[]
   hints?: Hint[]
   attachments?: Attachment[]
@@ -48,13 +51,16 @@ export interface Attachment {
 }
 
 export interface CreateExerciseRequest {
+  hackathon_id?: number
   title: string
   description: string
-  category: string
-  difficulty: 'easy' | 'medium' | 'hard'
-  points: number
-  time_limit?: number
-  is_active?: boolean
+  instructions?: string
+  rubric?: string
+  type: 'coding' | 'study' | 'presentation' | 'deployment' | 'other'
+  max_score: number
+  time_limit_minutes?: number
+  start_time?: string
+  assign_to?: 'all' | number[]
   flags?: CreateFlagRequest[]
   hints?: CreateHintRequest[]
 }
@@ -62,11 +68,12 @@ export interface CreateExerciseRequest {
 export interface UpdateExerciseRequest {
   title?: string
   description?: string
-  category?: string
-  difficulty?: 'easy' | 'medium' | 'hard'
-  points?: number
-  time_limit?: number
-  is_active?: boolean
+  instructions?: string
+  rubric?: string
+  type?: 'coding' | 'study' | 'presentation' | 'deployment' | 'other'
+  max_score?: number
+  time_limit_minutes?: number
+  start_time?: string
 }
 
 export interface CreateFlagRequest {

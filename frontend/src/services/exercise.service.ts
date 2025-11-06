@@ -18,7 +18,7 @@ class ExerciseService {
   /**
    * Get all exercises
    */
-  async getAll(params?: { category?: string; difficulty?: string; is_active?: boolean }): Promise<Exercise[]> {
+  async getAll(params?: { category?: string; difficulty?: string; is_active?: boolean; hackathon_id?: number }): Promise<Exercise[]> {
     const response = await api.get<{ exercises: Exercise[] }>('/api/exercises', { params })
     return response.data.exercises
   }
@@ -55,10 +55,10 @@ class ExerciseService {
   }
 
   /**
-   * Toggle exercise active status
+   * Update exercise status (draft, active, completed, cancelled)
    */
-  async toggleActive(id: number): Promise<Exercise> {
-    const response = await api.patch<{ exercise: Exercise }>(`/api/exercises/${id}/toggle-active`)
+  async updateStatus(id: number, status: 'draft' | 'active' | 'completed' | 'cancelled'): Promise<Exercise> {
+    const response = await api.patch<{ exercise: Exercise }>(`/api/exercises/${id}/status`, { status })
     return response.data.exercise
   }
 

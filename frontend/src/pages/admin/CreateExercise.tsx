@@ -1,68 +1,33 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Card, Button, Input, Select, Alert } from '@/components/common'
+import { useHackathonStore } from '@/store/hackathonStore'
 import exerciseService from '@/services/exercise.service'
-import { CreateExerciseRequest, CreateFlagRequest } from '@/types/exercise.types'
+import { CreateExerciseRequest } from '@/types/exercise.types'
 import toast from 'react-hot-toast'
-import 'react-markdown-editor-lite/lib/index.css'
-
-// Dynamically import markdown editor to avoid SSR issues
-import MarkdownIt from 'markdown-it'
-import MdEditor from 'react-markdown-editor-lite'
-
-const mdParser = new MarkdownIt()
 
 const CreateExercise = () => {
   const navigate = useNavigate()
+  const { selectedHackathon } = useHackathonStore()
   const [saving, setSaving] = useState(false)
   const [formData, setFormData] = useState<CreateExerciseRequest>({
     title: '',
     description: '',
-    category: '',
-    difficulty: 'medium',
-    points: 100,
-    time_limit: undefined,
-    is_active: true,
-    flags: [],
+    instructions: '',
+    rubric: '',
+    type: 'coding',
+    max_score: 100,
+    time_limit_minutes: undefined,
+    assign_to: 'all',
   })
-
-  const [newFlag, setNewFlag] = useState<CreateFlagRequest>({
-    flag_text: '',
-    points: 100,
-    is_case_sensitive: true,
-  })
-
-  const handleEditorChange = ({ text }: { text: string }) => {
-    setFormData({ ...formData, description: text })
-  }
-
-  const handleAddFlag = () => {
-    if (!newFlag.flag_text.trim()) {
-      toast.error('Flag text is required')
-      return
-    }
-
-    setFormData({
-      ...formData,
-      flags: [...(formData.flags || []), { ...newFlag }],
-    })
-
-    setNewFlag({
-      flag_text: '',
-      points: 100,
-      is_case_sensitive: true,
-    })
-
-    toast.success('Flag added')
-  }
-
-  const handleRemoveFlag = (index: number) => {
-    const newFlags = formData.flags?.filter((_, i) => i !== index) || []
-    setFormData({ ...formData, flags: newFlags })
-  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+
+    if (!selectedHackathon) {
+      toast.error('Please select a hackathon first')
+      return
+    }
 
     if (!formData.title.trim()) {
       toast.error('Title is required')
@@ -74,19 +39,17 @@ const CreateExercise = () => {
       return
     }
 
-    if (!formData.category.trim()) {
-      toast.error('Category is required')
-      return
-    }
-
-    if (!formData.flags || formData.flags.length === 0) {
-      toast.error('At least one flag is required')
+    if (!formData.type) {
+      toast.error('Exercise type is required')
       return
     }
 
     try {
       setSaving(true)
-      await exerciseService.create(formData)
+      await exerciseService.create({
+        ...formData,
+        hackathon_id: selectedHackathon.id,
+      })
       toast.success('Exercise created successfully!')
       navigate('/admin/exercises')
     } catch (error: any) {
@@ -99,13 +62,19 @@ const CreateExercise = () => {
 
   return (
     <div>
-      <div style={{ marginBottom: 'var(--spacing-xl)' }}>
-        <h1 className="gradient-text" style={{ marginBottom: 'var(--spacing-xs)' }}>
-          Create Exercise
-        </h1>
-        <p style={{ color: 'var(--color-text-tertiary)' }}>
-          Create a new hackathon exercise
-        </p>
+      {/* Header */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--spacing-xl)' }}>
+        <div>
+          <h1 className="gradient-text" style={{ marginBottom: 'var(--spacing-xs)' }}>
+            Create Exercise
+          </h1>
+          <p style={{ color: 'var(--color-text-tertiary)' }}>
+            Create a new exercise for {selectedHackathon?.name || 'the hackathon'}
+          </p>
+        </div>
+        <Button variant="ghost" onClick={() => navigate('/admin/exercises')}>
+          ← Back to Exercises
+        </Button>
       </div>
 
       <form onSubmit={handleSubmit}>
@@ -113,171 +82,165 @@ const CreateExercise = () => {
         <Card style={{ marginBottom: 'var(--spacing-lg)' }}>
           <h2 style={{ marginBottom: 'var(--spacing-md)' }}>Basic Information</h2>
 
-          <Input
-            label="Exercise Title"
-            placeholder="Enter exercise title"
-            value={formData.title}
-            onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-            required
-          />
-
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 'var(--spacing-md)' }}>
+          <div style={{ marginBottom: 'var(--spacing-lg)' }}>
             <Input
-              label="Category"
-              placeholder="e.g., Web, Crypto, Forensics"
-              value={formData.category}
-              onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+              label="Exercise Title"
+              placeholder="Enter exercise title"
+              value={formData.title}
+              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
               required
             />
+          </div>
 
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 'var(--spacing-md)' }}>
             <Select
-              label="Difficulty"
-              value={formData.difficulty}
-              onChange={(e) => setFormData({ ...formData, difficulty: e.target.value as any })}
+              label="Exercise Type"
+              value={formData.type}
+              onChange={(e) => setFormData({ ...formData, type: e.target.value as any })}
               required
             >
-              <option value="easy">Easy</option>
-              <option value="medium">Medium</option>
-              <option value="hard">Hard</option>
+              <option value="coding">Coding</option>
+              <option value="study">Study</option>
+              <option value="presentation">Presentation</option>
+              <option value="deployment">Deployment</option>
+              <option value="other">Other</option>
             </Select>
 
             <Input
               type="number"
-              label="Points"
+              label="Max Score"
               placeholder="100"
-              value={formData.points}
-              onChange={(e) => setFormData({ ...formData, points: parseInt(e.target.value) || 0 })}
+              value={formData.max_score}
+              onChange={(e) => setFormData({ ...formData, max_score: parseInt(e.target.value) || 100 })}
               required
+              min="0"
             />
 
             <Input
               type="number"
               label="Time Limit (minutes)"
-              placeholder="Optional"
-              value={formData.time_limit || ''}
-              onChange={(e) => setFormData({ ...formData, time_limit: parseInt(e.target.value) || undefined })}
+              placeholder="No limit"
+              value={formData.time_limit_minutes || ''}
+              onChange={(e) => setFormData({ ...formData, time_limit_minutes: e.target.value ? parseInt(e.target.value) : undefined })}
+              min="0"
             />
-          </div>
-
-          <div style={{ marginTop: 'var(--spacing-md)' }}>
-            <label style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-sm)', cursor: 'pointer' }}>
-              <input
-                type="checkbox"
-                checked={formData.is_active}
-                onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
-                style={{ width: '18px', height: '18px' }}
-              />
-              <span>Make this exercise active immediately</span>
-            </label>
           </div>
         </Card>
 
         {/* Description */}
         <Card style={{ marginBottom: 'var(--spacing-lg)' }}>
-          <h2 style={{ marginBottom: 'var(--spacing-md)' }}>Description</h2>
+          <h2 style={{ marginBottom: 'var(--spacing-sm)' }}>Description</h2>
           <p style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-tertiary)', marginBottom: 'var(--spacing-md)' }}>
-            Write the exercise description in Markdown. This will be shown to participants.
+            Brief overview of the exercise. This is shown to participants in the exercise list.
           </p>
 
-          <MdEditor
+          <textarea
             value={formData.description}
-            style={{ height: '400px' }}
-            renderHTML={(text) => mdParser.render(text)}
-            onChange={handleEditorChange}
-            placeholder="Enter exercise description in Markdown..."
+            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+            style={{
+              width: '100%',
+              minHeight: '120px',
+              padding: 'var(--spacing-sm)',
+              fontSize: 'var(--font-size-base)',
+              border: '1px solid var(--color-border)',
+              borderRadius: 'var(--radius-md)',
+              backgroundColor: 'var(--color-bg-secondary)',
+              color: 'var(--color-text-primary)',
+              fontFamily: 'inherit',
+              resize: 'vertical',
+            }}
+            placeholder="Brief description of what participants need to do..."
+            required
           />
         </Card>
 
-        {/* Flags */}
+        {/* Instructions */}
         <Card style={{ marginBottom: 'var(--spacing-lg)' }}>
-          <h2 style={{ marginBottom: 'var(--spacing-md)' }}>Flags</h2>
+          <h2 style={{ marginBottom: 'var(--spacing-sm)' }}>Instructions</h2>
           <p style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-tertiary)', marginBottom: 'var(--spacing-md)' }}>
-            Add one or more flags that participants need to find. Multiple flags can have different point values.
+            Step-by-step guide for participants. Be detailed and clear.
+          </p>
+
+          <textarea
+            value={formData.instructions}
+            onChange={(e) => setFormData({ ...formData, instructions: e.target.value })}
+            style={{
+              width: '100%',
+              minHeight: '200px',
+              padding: 'var(--spacing-sm)',
+              fontSize: 'var(--font-size-base)',
+              border: '1px solid var(--color-border)',
+              borderRadius: 'var(--radius-md)',
+              backgroundColor: 'var(--color-bg-secondary)',
+              color: 'var(--color-text-primary)',
+              fontFamily: 'inherit',
+              resize: 'vertical',
+            }}
+            placeholder="1. First step...&#10;2. Second step...&#10;3. Third step..."
+          />
+        </Card>
+
+        {/* Rubric */}
+        <Card style={{ marginBottom: 'var(--spacing-lg)' }}>
+          <h2 style={{ marginBottom: 'var(--spacing-sm)' }}>
+            Grading Rubric <span style={{ color: 'var(--color-primary)', fontWeight: 'normal' }}>🤖 AI-Powered</span>
+          </h2>
+          <p style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-tertiary)', marginBottom: 'var(--spacing-md)' }}>
+            Define grading criteria for judges and AI. The more detailed, the better AI grading will work.
           </p>
 
           <Alert variant="info" style={{ marginBottom: 'var(--spacing-md)' }}>
-            At least one flag is required. Flag text is hidden from participants.
+            💡 <strong>AI Grading Tip:</strong> Include specific criteria like "Code quality", "Functionality", "Best practices", etc.
+            The AI will use this rubric to evaluate submissions automatically.
           </Alert>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr auto auto', gap: 'var(--spacing-sm)', alignItems: 'end' }}>
-            <Input
-              placeholder="flag{example_flag_here}"
-              value={newFlag.flag_text}
-              onChange={(e) => setNewFlag({ ...newFlag, flag_text: e.target.value })}
+          <textarea
+            value={formData.rubric}
+            onChange={(e) => setFormData({ ...formData, rubric: e.target.value })}
+            style={{
+              width: '100%',
+              minHeight: '200px',
+              padding: 'var(--spacing-sm)',
+              fontSize: 'var(--font-size-base)',
+              border: '1px solid var(--color-border)',
+              borderRadius: 'var(--radius-md)',
+              backgroundColor: 'var(--color-bg-secondary)',
+              color: 'var(--color-text-primary)',
+              fontFamily: 'inherit',
+              resize: 'vertical',
+            }}
+            placeholder="Grading Criteria:&#10;- Code Quality (30 points): Clean, readable, well-structured code&#10;- Functionality (40 points): All features work correctly&#10;- Best Practices (20 points): Follows coding standards&#10;- Documentation (10 points): Clear comments and README"
+          />
+        </Card>
+
+        {/* Assignment */}
+        <Card style={{ marginBottom: 'var(--spacing-lg)' }}>
+          <h2 style={{ marginBottom: 'var(--spacing-sm)' }}>Team Assignment</h2>
+          <p style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-tertiary)', marginBottom: 'var(--spacing-md)' }}>
+            Choose which teams should receive this exercise.
+          </p>
+
+          <label style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-sm)', cursor: 'pointer' }}>
+            <input
+              type="checkbox"
+              checked={formData.assign_to === 'all'}
+              onChange={(e) => setFormData({ ...formData, assign_to: e.target.checked ? 'all' : undefined })}
+              style={{ width: '18px', height: '18px' }}
             />
+            <span style={{ fontSize: 'var(--font-size-base)' }}>
+              Assign to all teams in hackathon
+            </span>
+          </label>
 
-            <Input
-              type="number"
-              placeholder="Points"
-              value={newFlag.points}
-              onChange={(e) => setNewFlag({ ...newFlag, points: parseInt(e.target.value) || 0 })}
-            />
-
-            <label style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-xs)', whiteSpace: 'nowrap', padding: 'var(--spacing-sm)' }}>
-              <input
-                type="checkbox"
-                checked={newFlag.is_case_sensitive}
-                onChange={(e) => setNewFlag({ ...newFlag, is_case_sensitive: e.target.checked })}
-                style={{ width: '16px', height: '16px' }}
-              />
-              <span style={{ fontSize: 'var(--font-size-sm)' }}>Case-sensitive</span>
-            </label>
-
-            <Button type="button" variant="primary" onClick={handleAddFlag}>
-              Add Flag
-            </Button>
-          </div>
-
-          {formData.flags && formData.flags.length > 0 && (
-            <div style={{ marginTop: 'var(--spacing-md)' }}>
-              <h3 style={{ fontSize: 'var(--font-size-md)', marginBottom: 'var(--spacing-sm)' }}>
-                Added Flags ({formData.flags.length})
-              </h3>
-              <div className="table-container">
-                <table className="table">
-                  <thead>
-                    <tr>
-                      <th>Flag Text</th>
-                      <th>Points</th>
-                      <th>Case Sensitive</th>
-                      <th>Action</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {formData.flags.map((flag, index) => (
-                      <tr key={index}>
-                        <td>
-                          <code style={{ background: 'var(--color-bg-secondary)', padding: '4px 8px', borderRadius: 'var(--radius-sm)' }}>
-                            {flag.flag_text}
-                          </code>
-                        </td>
-                        <td>{flag.points}</td>
-                        <td>
-                          <span className={`badge ${flag.is_case_sensitive ? 'badge-info' : 'badge-secondary'}`}>
-                            {flag.is_case_sensitive ? 'Yes' : 'No'}
-                          </span>
-                        </td>
-                        <td>
-                          <Button
-                            type="button"
-                            variant="danger"
-                            size="sm"
-                            onClick={() => handleRemoveFlag(index)}
-                          >
-                            Remove
-                          </Button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
+          {formData.assign_to !== 'all' && (
+            <Alert variant="warning" style={{ marginTop: 'var(--spacing-md)' }}>
+              ⚠️ No teams will be assigned. You can assign teams later from the exercise management page.
+            </Alert>
           )}
         </Card>
 
         {/* Submit */}
-        <div style={{ display: 'flex', gap: 'var(--spacing-md)' }}>
+        <div style={{ display: 'flex', gap: 'var(--spacing-md)', justifyContent: 'flex-end' }}>
           <Button
             type="button"
             variant="ghost"
@@ -289,11 +252,9 @@ const CreateExercise = () => {
           <Button
             type="submit"
             variant="primary"
-            size="lg"
-            loading={saving}
-            style={{ flex: 1 }}
+            disabled={saving}
           >
-            {saving ? 'Creating...' : 'Create Exercise'}
+            {saving ? 'Creating Exercise...' : 'Create Exercise'}
           </Button>
         </div>
       </form>
