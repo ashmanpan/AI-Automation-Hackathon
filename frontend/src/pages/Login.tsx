@@ -94,19 +94,7 @@ const Login = () => {
           </Button>
         </form>
 
-        <div className="divider" style={{ margin: 'var(--spacing-xl) 0' }}></div>
-
-        <div style={{ textAlign: 'center' }}>
-          <p style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-tertiary)', marginBottom: 'var(--spacing-sm)' }}>
-            <strong>Default Credentials:</strong>
-          </p>
-          <div style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)' }}>
-            <div>👤 Username: <code style={{ background: 'var(--color-bg-secondary)', padding: '2px 8px', borderRadius: 'var(--radius-sm)' }}>admin</code></div>
-            <div style={{ marginTop: 'var(--spacing-xs)' }}>🔑 Password: <code style={{ background: 'var(--color-bg-secondary)', padding: '2px 8px', borderRadius: 'var(--radius-sm)' }}>admin123</code></div>
-          </div>
-        </div>
-
-        {/* Environment Info (Dev Only) */}
+        {/* Environment Info & Default Credentials (Dev Only) */}
         {import.meta.env.DEV && (
           <div style={{ marginTop: 'var(--spacing-lg)', padding: 'var(--spacing-md)', background: 'rgba(0, 255, 136, 0.05)', borderRadius: 'var(--radius-md)', border: '1px solid rgba(0, 255, 136, 0.2)' }}>
             <p style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-accent-mint)', marginBottom: 'var(--spacing-xs)' }}>

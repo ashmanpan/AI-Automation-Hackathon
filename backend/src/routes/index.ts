@@ -55,8 +55,10 @@ router.delete('/hackathons/:id', authenticateToken, requireAdmin, HackathonsCont
 
 // ==================== Teams Routes ====================
 router.get('/teams', authenticateToken, TeamsController.getAll);
+router.get('/teams/my-team', authenticateToken, TeamsController.getMyTeam);
 router.get('/teams/unassigned', authenticateToken, requireAdmin, TeamsController.getUnassignedParticipants);
 router.get('/teams/:id', authenticateToken, TeamsController.getById);
+router.get('/teams/:id/members', authenticateToken, TeamsController.getMembers);
 router.post('/teams', authenticateToken, requireAdmin, TeamsController.create);
 router.put('/teams/:id', authenticateToken, requireAdmin, TeamsController.update);
 router.delete('/teams/:id', authenticateToken, requireAdmin, TeamsController.delete);
