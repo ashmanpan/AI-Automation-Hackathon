@@ -7,6 +7,8 @@ export class ExercisesController {
     try {
       const { hackathon_id, team_id, is_active, status } = req.query;
 
+      console.log('[DEBUG] getAll exercises - query params:', { hackathon_id, team_id, is_active, status });
+
       // Map is_active to status
       let statusFilter: string | undefined;
       if (is_active === 'true') {
@@ -17,6 +19,7 @@ export class ExercisesController {
 
       if (team_id) {
         const exercises = await ExerciseModel.findByTeam(parseInt(team_id as string));
+        console.log('[DEBUG] Found exercises for team:', exercises.length);
         return res.json({ exercises });
       }
 
@@ -25,6 +28,8 @@ export class ExercisesController {
           parseInt(hackathon_id as string),
           statusFilter
         );
+        console.log('[DEBUG] Found exercises for hackathon', hackathon_id, ':', exercises.length, 'exercises');
+        console.log('[DEBUG] Exercises:', JSON.stringify(exercises, null, 2));
         return res.json({ exercises });
       }
 
